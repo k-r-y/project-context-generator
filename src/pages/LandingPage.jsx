@@ -182,7 +182,7 @@ export default function LandingPage() {
         <motion.div
           variants={item}
           transition={{ duration: 0.5, ease }}
-          style={{ display: 'flex', gap: '10px', justifyCenter: 'center', flexWrap: 'wrap', marginBottom: '12px' }}
+          style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '12px' }}
         >
           <motion.button
             className="btn-primary"
