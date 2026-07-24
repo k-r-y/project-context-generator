@@ -169,18 +169,6 @@ export default function Dashboard() {
             {saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}
           </button>
 
-          <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
-
-          {/* Settings / Config */}
-          <button
-            className="btn-ghost"
-            onClick={() => setShowConfig(true)}
-            aria-label="Firebase settings"
-            style={{ padding: '6px' }}
-          >
-            <Settings size={15} />
-          </button>
-
           {/* User Auth Profile */}
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -72,10 +72,6 @@ export default function LandingPage() {
       }}>
         <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>PCG</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button className="btn-ghost" onClick={() => setShowConfig(true)} aria-label="Settings" style={{ padding: '6px' }}>
-            <Settings size={15} />
-          </button>
-
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
