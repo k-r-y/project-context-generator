@@ -14,8 +14,7 @@ const DEFAULT_FIREBASE_CONFIG = {
 }
 
 export function getFirebaseInstance() {
-  const state = useProjectStore.getState()
-  const config = state.firebaseConfig || DEFAULT_FIREBASE_CONFIG
+  const config = DEFAULT_FIREBASE_CONFIG
 
   if (!config) {
     return { auth: null, db: null, initialized: false }
