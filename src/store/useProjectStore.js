@@ -14,31 +14,31 @@ const defaultState = {
   },
   pillars: {
     architecture: {
-      stack: [],           // ['React', 'Vite', 'Tailwind', ...]
-      rendering: '',       // 'SPA' | 'SSR' | 'SSG' | 'Hybrid'
-      database: '',        // 'Postgres' | 'Supabase' | 'Firebase' | 'PlanetScale' | 'None'
-      deployment: '',      // 'Vercel' | 'Netlify' | 'Railway' | 'Docker' | 'AWS'
-      designPattern: '',   // 'MVC' | 'Repository Pattern' | 'Module-Based' | 'Microservices' | 'Feature-Sliced'
-      authStrategy: '',    // 'JWT' | 'Session' | 'OAuth' | 'Magic Link' | 'None'
+      stack: [],
+      rendering: '',
+      database: '',
+      deployment: '',
+      designPattern: '',
+      authStrategy: '',
     },
     design: {
-      vibe: '',         // 'Minimalist' | 'Bold' | 'Playful' | 'Corporate' | 'Dark Premium'
-      primaryColor: '', // hex string
-      typography: '',   // 'Inter' | 'Plus Jakarta' | 'Geist' | 'DM Sans'
+      vibe: '',
+      primaryColor: '',
+      typography: '',
     },
     rules: {
-      language: '',           // 'JavaScript' | 'TypeScript'
-      testing: '',            // 'Vitest' | 'Jest' | 'Playwright' | 'None'
-      antiPatterns: [],       // string[]
-      extraConstraints: '',   // freeform
-      fileNaming: '',         // 'kebab-case' | 'PascalCase' | 'camelCase'
-      componentNaming: '',    // 'PascalCase.tsx' | 'kebab-case.tsx'
-      dbNaming: '',           // 'snake_case' | 'camelCase'
-      errorHandling: '',      // 'centralized try/catch' | 'Result pattern' | 'Error boundaries'
+      language: '',
+      testing: '',
+      antiPatterns: [],
+      extraConstraints: '',
+      fileNaming: '',
+      componentNaming: '',
+      dbNaming: '',
+      errorHandling: '',
     },
     schema: {
-      entities: [],         // [{ name, fields }]
-      dataPattern: '',      // 'REST' | 'GraphQL' | 'tRPC' | 'Server Actions'
+      entities: [],
+      dataPattern: '',
     },
   },
   generatedOutputs: {
@@ -47,14 +47,19 @@ const defaultState = {
     design: null,
     rules: null,
     schema: null,
-    metrics: [],          // [{ id, text, done }]
+    metrics: [],
   },
-  outputMode: 'system',   // 'system' | 'ai' — user can toggle per-document
-  apiKey: '',             // Gemini API key (entered by user in UI)
+  outputMode: 'system',
+  apiKey: '',
   currentStep: 0,
   totalSteps: 8,
   isGenerating: false,
   generationError: null,
+
+  // Firebase auth & projects sync state
+  user: null, // { uid, email }
+  userProjects: [], // Array of saved projects from Firestore
+  firebaseConfig: null, // Custom Firebase config object if pasted by user
 }
 
 const useProjectStore = create(
@@ -62,22 +67,15 @@ const useProjectStore = create(
     (set, get) => ({
       ...defaultState,
 
-      // ── Meta ──────────────────────────────────────────────
+      // Meta
       setMeta: (meta) =>
         set((s) => ({ projectMeta: { ...s.projectMeta, ...meta } })),
 
-      // ── Pillars ───────────────────────────────────────────
+      // Pillars
       setArchitecture: (data) =>
         set((s) => ({
           pillars: { ...s.pillars, architecture: { ...s.pillars.architecture, ...data } },
         })),
-
-      toggleStackItem: (item) =>
-        set((s) => {
-          const stack = s.pillars.architecture.stack
-          const next = stack.includes(item) ? stack.filter((x) => x !== item) : [...stack, item]
-          return { pillars: { ...s.pillars, architecture: { ...s.pillars.architecture, stack: next } } }
-        }),
 
       setDesign: (data) =>
         set((s) => ({
@@ -94,7 +92,6 @@ const useProjectStore = create(
           pillars: { ...s.pillars, schema: { ...s.pillars.schema, ...data } },
         })),
 
-      // ── Tech stack chips toggle ───────────────────────────
       toggleStackItem: (item) =>
         set((s) => {
           const stack = s.pillars.architecture.stack
@@ -102,7 +99,6 @@ const useProjectStore = create(
           return { pillars: { ...s.pillars, architecture: { ...s.pillars.architecture, stack: next } } }
         }),
 
-      // ── Anti-pattern chips toggle ─────────────────────────
       toggleAntiPattern: (item) =>
         set((s) => {
           const list = s.pillars.rules.antiPatterns
@@ -110,7 +106,7 @@ const useProjectStore = create(
           return { pillars: { ...s.pillars, rules: { ...s.pillars.rules, antiPatterns: next } } }
         }),
 
-      // ── Navigation ───────────────────────────────────────
+      // Navigation
       nextStep: () =>
         set((s) => ({ currentStep: Math.min(s.currentStep + 1, s.totalSteps - 1) })),
 
@@ -119,7 +115,7 @@ const useProjectStore = create(
 
       goToStep: (step) => set({ currentStep: step }),
 
-      // ── Outputs ───────────────────────────────────────────
+      // Outputs
       setOutput: (key, value) =>
         set((s) => ({ generatedOutputs: { ...s.generatedOutputs, [key]: value } })),
 
@@ -136,22 +132,29 @@ const useProjectStore = create(
           },
         })),
 
-      // ── Mode & API key ────────────────────────────────────
+      // Auth & Sync Actions
+      setUser: (user) => set({ user }),
+      setFirebaseConfig: (cfg) => set({ firebaseConfig: cfg }),
+      setUserProjects: (projects) => set({ userProjects: projects }),
+
+      // Mode & API key
       setOutputMode: (mode) => set({ outputMode: mode }),
       setApiKey: (key) => set({ apiKey: key }),
 
-      // ── Generation state ─────────────────────────────────
+      // Generation state
       setGenerating: (val) => set({ isGenerating: val }),
       setGenerationError: (err) => set({ generationError: err }),
 
-      // ── Reset ─────────────────────────────────────────────
-      reset: () => set({ ...defaultState }),
+      // Reset
+      reset: () => {
+        const { firebaseConfig, user } = get()
+        set({ ...defaultState, firebaseConfig, user })
+      },
     }),
     {
-      name: 'pcg-project-store',
-      // Don't persist the API key to localStorage for security
+      name: 'pcg-project-store-v2',
       partialize: (s) => {
-        const { apiKey, isGenerating, generationError, ...rest } = s
+        const { apiKey, isGenerating, generationError, userProjects, ...rest } = s
         return rest
       },
     }

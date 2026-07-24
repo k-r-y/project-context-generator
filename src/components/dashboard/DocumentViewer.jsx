@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-export default function DocumentViewer({ content, docKey }) {
+export default function DocumentViewer({ content, docKey, isEditing, onEditChange }) {
   return (
     <div
       style={{
@@ -14,7 +14,7 @@ export default function DocumentViewer({ content, docKey }) {
     >
       <AnimatePresence mode="wait">
         <motion.div
-          key={docKey}
+          key={docKey + (isEditing ? '-edit' : '-view')}
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
@@ -23,9 +23,30 @@ export default function DocumentViewer({ content, docKey }) {
             flex: 1,
             overflowY: 'auto',
             padding: '28px 32px',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {content ? (
+          {isEditing ? (
+            <textarea
+              className="input-glass font-mono"
+              style={{
+                flex: 1,
+                width: '100%',
+                minHeight: '400px',
+                resize: 'none',
+                fontSize: '0.82rem',
+                lineHeight: 1.55,
+                background: 'rgba(255,255,255,0.01)',
+                border: 'none',
+                outline: 'none',
+                padding: 0,
+              }}
+              value={content}
+              onChange={(e) => onEditChange(e.target.value)}
+              placeholder="Edit your markdown documentation context here..."
+            />
+          ) : content ? (
             <div className="markdown-render">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {content}
@@ -43,7 +64,6 @@ export default function DocumentViewer({ content, docKey }) {
                 gap: '12px',
               }}
             >
-              <span style={{ fontSize: '2.5rem' }}>📄</span>
               <span style={{ fontSize: '0.9rem' }}>No content generated</span>
             </div>
           )}

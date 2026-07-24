@@ -1,28 +1,105 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, Cloud, LogIn, LogOut, Settings, Edit, Eye, Save } from 'lucide-react'
 import DocumentNav from './DocumentNav'
 import DocumentViewer from './DocumentViewer'
 import MetricsChecklist from './MetricsChecklist'
 import ActionBar from './ActionBar'
 import AIToggle from './AIToggle'
+import AuthModal from '../auth/AuthModal'
+import FirebaseConfigModal from '../auth/FirebaseConfigModal'
 import useProjectStore from '@/store/useProjectStore'
+import { getFirebaseInstance } from '@/lib/firebase'
+import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
 import { DOC_META } from '@/lib/downloadUtils'
 import { pageVariants } from '@/lib/animationVariants'
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { projectMeta, generatedOutputs, reset } = useProjectStore()
+  const {
+    projectMeta, pillars, generatedOutputs, setOutput, reset,
+    user, setUser, userProjects, setUserProjects, firebaseConfig,
+  } = useProjectStore()
+
   const [activeDoc, setActiveDoc] = useState('prd')
+  const [isEditing, setIsEditing] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
+  const [showConfig, setShowConfig] = useState(false)
+  const [saveLoading, setSaveLoading] = useState(false)
+  const [currentDocId, setCurrentDocId] = useState(null)
+
   const content = generatedOutputs[activeDoc] || ''
   const docMeta = DOC_META[activeDoc]
+
+  // Track if current project exists in loaded projects to allow update instead of duplicate save
+  useEffect(() => {
+    const existing = userProjects.find(p => p.projectMeta?.name === projectMeta.name)
+    if (existing) {
+      setCurrentDocId(existing.id)
+    } else {
+      setCurrentDocId(null)
+    }
+  }, [projectMeta.name, userProjects])
 
   const handleReset = () => {
     if (window.confirm('Start over? This will clear the current session.')) {
       reset()
       navigate('/')
     }
+  }
+
+  const handleLogout = () => {
+    setUser(null)
+    setUserProjects([])
+  }
+
+  const handleSaveToCloud = async () => {
+    if (!user) {
+      setShowAuth(true)
+      return
+    }
+
+    setSaveLoading(true)
+    const { db, initialized } = getFirebaseInstance()
+    if (!initialized) {
+      alert('Please configure your Firebase settings first!')
+      setSaveLoading(false)
+      return
+    }
+
+    try {
+      const payload = {
+        userId: user.uid,
+        projectMeta,
+        pillars,
+        generatedOutputs,
+        updatedAt: Date.now(),
+      }
+
+      if (currentDocId) {
+        // Update existing record
+        await setDoc(doc(db, 'projects', currentDocId), payload, { merge: true })
+        // Update local store state
+        setUserProjects(userProjects.map(p => p.id === currentDocId ? { ...p, ...payload } : p))
+        alert('Project updated successfully on Cloud!')
+      } else {
+        // Create new record
+        const docRef = await addDoc(collection(db, 'projects'), payload)
+        setCurrentDocId(docRef.id)
+        setUserProjects([{ id: docRef.id, ...payload }, ...userProjects])
+        alert('Project saved successfully to Cloud!')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('Failed to save to cloud: ' + err.message)
+    } finally {
+      setSaveLoading(false)
+    }
+  }
+
+  const handleEditChange = (val) => {
+    setOutput(activeDoc, val)
   }
 
   return (
@@ -68,7 +145,74 @@ export default function Dashboard() {
         {/* Right: actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
           <ActionBar activeDoc={activeDoc} content={content} />
+          
           <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
+
+          {/* Edit / Preview Toggle */}
+          <button
+            className={isEditing ? 'btn-primary' : 'btn-ghost'}
+            onClick={() => setIsEditing(!isEditing)}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
+          >
+            {isEditing ? <Eye size={13} /> : <Edit size={13} />}
+            {isEditing ? 'View Markdown' : 'Edit'}
+          </button>
+
+          {/* Save to Cloud */}
+          <button
+            className="btn-ghost"
+            onClick={handleSaveToCloud}
+            disabled={saveLoading}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
+          >
+            <Cloud size={13} />
+            {saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}
+          </button>
+
+          <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
+
+          {/* Settings / Config */}
+          <button
+            className="btn-ghost"
+            onClick={() => setShowConfig(true)}
+            aria-label="Firebase settings"
+            style={{ padding: '6px' }}
+          >
+            <Settings size={15} />
+          </button>
+
+          {/* User Auth Profile */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                className="btn-ghost"
+                onClick={() => navigate('/projects')}
+                style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)' }}
+              >
+                {user.displayName || user.email.split('@')[0]}
+              </button>
+              <button
+                className="btn-ghost"
+                onClick={handleLogout}
+                style={{ padding: '6px' }}
+                aria-label="Logout"
+                title="Logout"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          ) : (
+            <button
+              className="btn-ghost"
+              onClick={() => setShowAuth(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+            >
+              <LogIn size={14} /> Log in
+            </button>
+          )}
+
+          <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
+
           <button
             className="btn-ghost"
             onClick={handleReset}
@@ -143,10 +287,17 @@ export default function Dashboard() {
               gap: '5px',
             }}>
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success)' }} />
-              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>generated</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                {isEditing ? 'editing' : 'generated'}
+              </span>
             </div>
           </div>
-          <DocumentViewer content={content} docKey={activeDoc} />
+          <DocumentViewer
+            content={content}
+            docKey={activeDoc}
+            isEditing={isEditing}
+            onEditChange={handleEditChange}
+          />
         </main>
 
         {/* Col 3 — Right panel */}
@@ -164,6 +315,10 @@ export default function Dashboard() {
           </div>
         </aside>
       </div>
+
+      {/* Modals */}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      {showConfig && <FirebaseConfigModal onClose={() => setShowConfig(false)} />}
 
       <style>{`
         @media (max-width: 1100px) {

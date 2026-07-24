@@ -38,7 +38,7 @@ const FILES = ['PRD.md', 'ARCHITECTURE.md', 'DESIGN.md', 'RULES.md', 'SCHEMA.md'
 
 export default function LandingPage() {
   const navigate = useNavigate()
-  const { generatedOutputs, projectMeta } = useProjectStore()
+  const { generatedOutputs, projectMeta, user } = useProjectStore()
   const hasPrevious = !!generatedOutputs.prd
 
   return (
@@ -141,6 +141,17 @@ export default function LandingPage() {
           >
             Start building <ArrowRight size={15} />
           </motion.button>
+
+          {user && (
+            <motion.button
+              className="btn-secondary"
+              onClick={() => navigate('/projects')}
+              whileTap={{ scale: 0.97 }}
+              style={{ padding: '12px 20px', fontSize: '0.9rem' }}
+            >
+              View Saved Projects
+            </motion.button>
+          )}
 
           {hasPrevious && (
             <motion.button
