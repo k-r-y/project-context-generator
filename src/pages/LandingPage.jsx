@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, FileText, Zap, Package } from 'lucide-react'
+import { ArrowRight, FileText, Zap, Package, Settings, LogIn, LogOut, Folder } from 'lucide-react'
 import TypewriterText from '@/components/ui/TypewriterText'
 import useProjectStore from '@/store/useProjectStore'
+import AuthModal from '@/components/auth/AuthModal'
+import FirebaseConfigModal from '@/components/auth/FirebaseConfigModal'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -38,8 +41,16 @@ const FILES = ['PRD.md', 'ARCHITECTURE.md', 'DESIGN.md', 'RULES.md', 'SCHEMA.md'
 
 export default function LandingPage() {
   const navigate = useNavigate()
-  const { generatedOutputs, projectMeta, user } = useProjectStore()
+  const { generatedOutputs, projectMeta, user, setUser, setUserProjects } = useProjectStore()
+  const [showAuth, setShowAuth] = useState(false)
+  const [showConfig, setShowConfig] = useState(false)
+
   const hasPrevious = !!generatedOutputs.prd
+
+  const handleLogout = () => {
+    setUser(null)
+    setUserProjects([])
+  }
 
   return (
     <div
@@ -52,6 +63,47 @@ export default function LandingPage() {
         padding: '80px 24px 60px',
       }}
     >
+      {/* Top Navbar */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: '52px', borderBottom: '1px solid var(--color-border)',
+        padding: '0 24px', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>PCG</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button className="btn-ghost" onClick={() => setShowConfig(true)} aria-label="Settings" style={{ padding: '6px' }}>
+            <Settings size={15} />
+          </button>
+
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                className="btn-ghost"
+                onClick={() => navigate('/projects')}
+                style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Folder size={13} /> Projects
+              </button>
+              <span className="label-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                {user.displayName || user.email.split('@')[0]}
+              </span>
+              <button className="btn-ghost" onClick={handleLogout} style={{ padding: '6px' }} title="Logout">
+                <LogOut size={15} />
+              </button>
+            </div>
+          ) : (
+            <button
+              className="btn-ghost"
+              onClick={() => setShowAuth(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+            >
+              <LogIn size={14} /> Log in
+            </button>
+          )}
+        </div>
+      </div>
+
       <motion.div
         variants={container}
         initial="hidden"
@@ -130,7 +182,7 @@ export default function LandingPage() {
         <motion.div
           variants={item}
           transition={{ duration: 0.5, ease }}
-          style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '12px' }}
+          style={{ display: 'flex', gap: '10px', justifyCenter: 'center', flexWrap: 'wrap', marginBottom: '12px' }}
         >
           <motion.button
             className="btn-primary"
@@ -223,8 +275,12 @@ export default function LandingPage() {
           letterSpacing: '0.01em',
         }}
       >
-        No signup · Runs in browser · localStorage persistence
+        Dynamic cloud sync · Runs in browser · localStorage persistence
       </motion.p>
+
+      {/* Modals */}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      {showConfig && <FirebaseConfigModal onClose={() => setShowConfig(false)} />}
     </div>
   )
 }
