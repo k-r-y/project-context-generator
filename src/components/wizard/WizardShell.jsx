@@ -58,19 +58,19 @@ export default function WizardShell() {
 
       {/* Top bar */}
       <header style={{
-        padding: '16px 24px',
+        padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         borderBottom: '1px solid var(--color-border)',
-        gap: '24px',
+        gap: '12px',
       }}>
         <span style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
           PCG
         </span>
 
-        {/* Step labels */}
-        <nav style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+        {/* Step labels - hidden on mobile */}
+        <nav className="wizard-nav" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           {STEP_LABELS.map((label, i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span style={{
@@ -101,7 +101,7 @@ export default function WizardShell() {
                 navigate('/')
               }
             }}
-            style={{ fontSize: '0.85rem' }}
+            style={{ fontSize: '0.8rem' }}
           >
             Start over
           </button>
@@ -109,6 +109,7 @@ export default function WizardShell() {
             className="btn-ghost"
             onClick={() => navigate('/')}
             aria-label="Exit wizard"
+            style={{ padding: '4px' }}
           >
             <X size={15} />
           </button>
@@ -132,11 +133,11 @@ export default function WizardShell() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '48px 40px',
+          padding: '24px 16px',
           borderRight: '1px solid var(--color-border)',
           position: 'relative',
           overflowY: 'auto',
-        }}>
+        }} className="wizard-step-area">
           {/* Generating overlay */}
           <AnimatePresence>
             {isGenerating && (
@@ -198,9 +199,13 @@ export default function WizardShell() {
       </div>
 
       <style>{`
+        @media (max-width: 768px) {
+          .wizard-nav { display: none !important; }
+        }
         @media (max-width: 900px) {
           .wizard-layout { grid-template-columns: 1fr !important; }
           .live-preview-panel { display: none !important; }
+          .wizard-step-area { border-right: none !important; }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
