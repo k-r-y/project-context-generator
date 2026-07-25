@@ -12,6 +12,7 @@ import AuthModal from '../auth/AuthModal'
 import useProjectStore from '@/store/useProjectStore'
 import { getFirebaseInstance } from '@/lib/firebase'
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
+import { signOut } from 'firebase/auth'
 import { DOC_META } from '@/lib/downloadUtils'
 import { pageVariants, bentoGridContainer, bentoGridCell } from '@/lib/animationVariants'
 import InteractiveButton from '@/components/ui/InteractiveButton'
@@ -50,9 +51,19 @@ export default function Dashboard() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const { auth } = getFirebaseInstance()
+      if (auth) {
+        await signOut(auth)
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    }
     setUser(null)
     setUserProjects([])
+    toast.success('Logged out successfully')
+    navigate('/')
   }
 
   const handleSaveToCloud = async () => {

@@ -2,16 +2,71 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Resource Hints for Fast Access -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
+    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com" />
+
+    <!-- Primary SEO Meta Tags -->
     <title>Project Context Generator — Stop writing docs. Start shipping.</title>
+    <meta name="title" content="Project Context Generator — Stop writing docs. Start shipping." />
     <meta name="description" content="Answer a handful of targeted questions and get a complete suite of AI-crafted context files for your project: PRD, Architecture, Design, Rules, and Schema — all in under 5 minutes." />
-    <meta property="og:title" content="Project Context Generator" />
-    <meta property="og:description" content="Stop writing boilerplate docs. Generate PRD, Architecture, Design System, Rules, and Schema files interactively." />
+    <meta name="keywords" content="project context generator, ai documentation, prd generator, architecture docs, design system rules, developer tools, prompt engineering, gemini ai docs" />
+    <meta name="author" content="Project Context Generator" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://project-context-generator.web.app/" />
     <meta name="theme-color" content="#060614" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://project-context-generator.web.app/" />
+    <meta property="og:site_name" content="Project Context Generator" />
+    <meta property="og:title" content="Project Context Generator — Stop writing docs. Start shipping." />
+    <meta property="og:description" content="Stop writing boilerplate docs. Generate PRD, Architecture, Design System, Rules, and Schema files interactively in under 5 minutes." />
+    <meta property="og:image" content="https://project-context-generator.web.app/favicon.svg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://project-context-generator.web.app/" />
+    <meta name="twitter:title" content="Project Context Generator — Stop writing docs. Start shipping." />
+    <meta name="twitter:description" content="Stop writing boilerplate docs. Generate PRD, Architecture, Design System, Rules, and Schema files interactively." />
+    <meta name="twitter:image" content="https://project-context-generator.web.app/favicon.svg" />
+
+    <!-- Structured Data (JSON-LD) for Search Engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Project Context Generator",
+        "url": "https://project-context-generator.web.app/",
+        "description": "Interactive generator for software project context files including PRD, Architecture, Design System, Development Rules, and Database Schema.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Interactive 5-step project wizard",
+          "AI-assisted context generation powered by Gemini API",
+          "Exportable Markdown files and full project ZIP archives",
+          "Cloud synchronization via Firebase Cloud Firestore",
+          "Custom design system token configuration"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
+

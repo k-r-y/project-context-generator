@@ -1,0 +1,17 @@
+{
+  "name": "Project Context Generator",
+  "short_name": "PCG Docs",
+  "description": "Stop writing docs. Start shipping. Answer targeted questions and get PRD, Architecture, Design, Rules, and Schema context files.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060614",
+  "theme_color": "#060614",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

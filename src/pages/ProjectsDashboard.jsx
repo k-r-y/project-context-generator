@@ -1,17 +1,40 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FolderOpen, ArrowLeft, Trash2, Calendar, FileText } from 'lucide-react'
+import { FolderOpen, ArrowLeft, Trash2, Calendar, FileText, LogOut } from 'lucide-react'
 import { getFirebaseInstance } from '@/lib/firebase'
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'
+import { signOut } from 'firebase/auth'
 import useProjectStore from '@/store/useProjectStore'
 import { toast } from '@/store/useToastStore'
 import InteractiveButton from '@/components/ui/InteractiveButton'
+import useSEO from '@/hooks/useSEO'
 
 export default function ProjectsDashboard() {
+  useSEO({
+    title: 'Saved Projects — Project Context Generator',
+    description: 'Access and manage your saved software project context suites in Cloud Firestore.',
+    canonical: '/projects',
+  })
+
   const navigate = useNavigate()
-  const { user, userProjects, setUserProjects } = useProjectStore()
+  const { user, setUser, userProjects, setUserProjects } = useProjectStore()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const handleLogout = async () => {
+    try {
+      const { auth } = getFirebaseInstance()
+      if (auth) {
+        await signOut(auth)
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    }
+    setUser(null)
+    setUserProjects([])
+    toast.success('Logged out successfully')
+    navigate('/')
+  }
 
   const fetchProjects = async () => {
     if (!user) return
@@ -100,7 +123,15 @@ export default function ProjectsDashboard() {
         <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>
           My Saved Projects
         </span>
-        <div style={{ width: '60px' }} />
+        <InteractiveButton
+          className="btn-ghost"
+          onClick={handleLogout}
+          style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+          title="Logout"
+          aria-label="Log out"
+        >
+          <LogOut size={14} /> Log out
+        </InteractiveButton>
       </header>
 
       {/* Main content */}

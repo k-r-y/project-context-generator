@@ -10,6 +10,9 @@ import FirebaseConfigModal from '@/components/auth/FirebaseConfigModal'
 import ShinyText from '@/components/ui/ShinyText'
 import Magnetic from '@/components/ui/Magnetic'
 import InteractiveButton from '@/components/ui/InteractiveButton'
+import useSEO from '@/hooks/useSEO'
+import { getFirebaseInstance } from '@/lib/firebase'
+import { signOut } from 'firebase/auth'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -44,6 +47,12 @@ const FEATURES = [
 const FILES = ['PRD.md', 'ARCHITECTURE.md', 'DESIGN.md', 'RULES.md', 'SCHEMA.md']
 
 export default function LandingPage() {
+  useSEO({
+    title: 'Project Context Generator — Stop writing docs. Start shipping.',
+    description: 'Answer targeted questions and get a complete suite of AI-crafted context files for your project: PRD, Architecture, Design, Rules, and Schema — in under 5 minutes.',
+    canonical: '/',
+  })
+
   const navigate = useNavigate()
   const { generatedOutputs, projectMeta, user, setUser, setUserProjects } = useProjectStore()
   const [showAuth, setShowAuth] = useState(false)
@@ -51,10 +60,19 @@ export default function LandingPage() {
 
   const hasPrevious = !!generatedOutputs.prd
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const { auth } = getFirebaseInstance()
+      if (auth) {
+        await signOut(auth)
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    }
     setUser(null)
     setUserProjects([])
-    toast.info('Logged out')
+    toast.success('Logged out successfully')
+    navigate('/')
   }
 
   return (
@@ -69,27 +87,28 @@ export default function LandingPage() {
       }}
     >
       {/* Top Navbar */}
-      <div style={{
+      <header role="banner" style={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: '52px', borderBottom: '1px solid var(--color-border)',
         padding: '0 24px', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
       }}>
         <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-text-primary)' }}>PCG</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <nav aria-label="Main navigation" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <InteractiveButton
                 className="btn-ghost"
                 onClick={() => navigate('/projects')}
                 style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
+                aria-label="View Projects"
               >
                 <Folder size={13} /> Projects
               </InteractiveButton>
               <span className="label-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {user.displayName || user.email.split('@')[0]}
               </span>
-              <InteractiveButton className="btn-ghost" onClick={handleLogout} style={{ padding: '6px' }} title="Logout">
+              <InteractiveButton className="btn-ghost" onClick={handleLogout} style={{ padding: '6px' }} title="Logout" aria-label="Log out">
                 <LogOut size={15} />
               </InteractiveButton>
             </div>
@@ -98,19 +117,16 @@ export default function LandingPage() {
               className="btn-ghost"
               onClick={() => setShowAuth(true)}
               style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+              aria-label="Log in"
             >
               <LogIn size={14} /> Log in
             </InteractiveButton>
           )}
-        </div>
-      </div>
+        </nav>
+      </header>
 
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="visible"
-        style={{ maxWidth: '620px', width: '100%', textAlign: 'center' }}
-      >
+      <main role="main" style={{ maxWidth: '620px', width: '100%', textAlign: 'center' }}>
+
         {/* Eyebrow */}
         <motion.div variants={item} transition={{ duration: 0.5, ease }} style={{ marginBottom: '32px' }}>
           <span className="badge badge-neutral">
@@ -257,23 +273,25 @@ export default function LandingPage() {
             </div>
           ))}
         </motion.div>
-      </motion.div>
+      </main>
 
       {/* Bottom note */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.8, duration: 0.6 }}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          fontSize: '0.72rem',
-          color: 'var(--color-text-muted)',
-          letterSpacing: '0.01em',
-        }}
-      >
-        Dynamic cloud sync · Runs in browser · localStorage persistence
-      </motion.p>
+      <footer role="contentinfo">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8, duration: 0.6 }}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            fontSize: '0.72rem',
+            color: 'var(--color-text-muted)',
+            letterSpacing: '0.01em',
+          }}
+        >
+          Dynamic cloud sync · Runs in browser · localStorage persistence
+        </motion.p>
+      </footer>
 
       {/* Modals */}
       {showAuth && (

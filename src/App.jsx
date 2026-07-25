@@ -1,32 +1,36 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import MeshBackground from '@/components/ui/MeshBackground'
 import LandingPage from '@/pages/LandingPage'
-import WizardShell from '@/components/wizard/WizardShell'
-import Dashboard from '@/components/dashboard/Dashboard'
-import ProjectsDashboard from '@/pages/ProjectsDashboard'
+import ToastProvider from '@/components/ui/ToastProvider'
+import LoadingSpinner from '@/components/ui/LoadingSpinner'
 import { getFirebaseInstance } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import useProjectStore from '@/store/useProjectStore'
+
+// Lazy load secondary routes for fast initial access & smaller initial JS bundle
+const WizardShell = lazy(() => import('@/components/wizard/WizardShell'))
+const Dashboard = lazy(() => import('@/components/dashboard/Dashboard'))
+const ProjectsDashboard = lazy(() => import('@/pages/ProjectsDashboard'))
 
 function AnimatedRoutes() {
   const location = useLocation()
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/wizard" element={<WizardShell />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/projects" element={<ProjectsDashboard />} />
-        <Route path="*" element={<LandingPage />} />
-      </Routes>
+      <Suspense fallback={<LoadingSpinner message="Preparing workspace..." />}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/wizard" element={<WizardShell />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/projects" element={<ProjectsDashboard />} />
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   )
 }
-
-import ToastProvider from '@/components/ui/ToastProvider'
 
 export default function App() {
   const { setUser, firebaseConfig } = useProjectStore()
