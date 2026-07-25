@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Palette } from 'lucide-react'
+import { Palette, Check } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
 import ChipSelector from '../ChipSelector'
 import useProjectStore from '@/store/useProjectStore'
@@ -15,24 +15,56 @@ const VIBES = [
   { value: 'Retro/Cyberpunk', desc: 'Neon glows, dark scanlines, tech terminal aesthetic' },
 ]
 
-const FONTS = ['Inter', 'Plus Jakarta Sans', 'Geist', 'DM Sans', 'Outfit', 'Satoshi', 'Playfair Display', 'Fira Code']
-
-const PRESET_COLORS = [
-  '#6366f1', '#8b5cf6', '#ec4899', '#14b8a6', '#f59e0b', '#ef4444',
-  '#22c55e', '#0ea5e9', '#f97316', '#a855f7', '#06b6d4', '#84cc16',
+const NEUTRAL_SHADES = [
+  { label: 'Pure White', hex: '#ffffff', border: '1px solid rgba(255,255,255,0.4)' },
+  { label: 'Light Gray', hex: '#f3f4f6', border: 'none' },
+  { label: 'Slate Gray', hex: '#9ca3af', border: 'none' },
+  { label: 'Dark Charcoal', hex: '#374151', border: 'none' },
+  { label: 'Off-Black', hex: '#111827', border: '1px solid rgba(255,255,255,0.2)' },
+  { label: 'Pure Black', hex: '#000000', border: '1px solid rgba(255,255,255,0.25)' },
 ]
 
-const UI_LIBRARIES = ['Shadcn/ui', 'Tailwind CSS', 'Bootstrap', 'Material UI', 'Chakra UI', 'None']
-const ICON_SETS = ['Lucide Icons', 'FontAwesome', 'Heroicons', 'Radix Icons', 'None']
-const LAYOUT_CONCEPTS = ['Glassmorphism', 'Bento Grid', 'Flat Minimalist', 'Neumorphic']
+const ACCENT_COLORS = [
+  { label: 'Indigo', hex: '#6366f1' },
+  { label: 'Purple', hex: '#8b5cf6' },
+  { label: 'Pink', hex: '#ec4899' },
+  { label: 'Teal', hex: '#14b8a6' },
+  { label: 'Amber', hex: '#f59e0b' },
+  { label: 'Red', hex: '#ef4444' },
+  { label: 'Emerald', hex: '#22c55e' },
+  { label: 'Sky Blue', hex: '#0ea5e9' },
+  { label: 'Orange', hex: '#f97316' },
+  { label: 'Violet', hex: '#a855f7' },
+  { label: 'Cyan', hex: '#06b6d4' },
+  { label: 'Lime', hex: '#84cc16' },
+]
+
+const FONTS = ['Inter', 'Plus Jakarta Sans', 'Geist', 'DM Sans', 'Outfit', 'Satoshi', 'Playfair Display', 'Fira Code', 'Other']
+const UI_LIBRARIES = ['Shadcn/ui', 'Tailwind CSS', 'Bootstrap', 'Material UI', 'Chakra UI', 'None', 'Other']
+const ICON_SETS = ['Lucide Icons', 'FontAwesome', 'Heroicons', 'Radix Icons', 'None', 'Other']
+const LAYOUT_CONCEPTS = ['Glassmorphism', 'Bento Grid', 'Flat Minimalist', 'Neumorphic', 'Other']
 
 export default function StepDesignVibe({ onNext, onBack }) {
   const { pillars, setDesign } = useProjectStore()
-  const { vibe, primaryColor, secondaryColor, typography, secondaryTypography, uiLibraries, iconSet, layoutConcepts, spacing, roundedCorners } = pillars.design
+  const {
+    vibe, primaryColor = '#6366f1', secondaryColor = '#ec4899', shades = ['#ffffff', '#111827'],
+    typography, secondaryTypography, customTypography, customSecondaryTypography,
+    uiLibraries = [], customUiLibrary,
+    iconSet, customIconSet,
+    layoutConcepts = [], customLayoutConcept,
+    spacing, roundedCorners,
+  } = pillars.design
+
   const canProceed = !!vibe
 
+  const toggleShade = (hex) => {
+    const current = shades || []
+    const next = current.includes(hex) ? current.filter((c) => c !== hex) : [...current, hex]
+    setDesign({ shades: next })
+  }
+
   return (
-    <QuestionCard style={{ maxWidth: '600px' }}>
+    <QuestionCard style={{ maxWidth: '640px' }}>
       <motion.div
         variants={staggerContainer}
         initial="hidden"
@@ -57,7 +89,7 @@ export default function StepDesignVibe({ onNext, onBack }) {
             What's the vibe?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
-            Customize your style direction, libraries, layout concept, and iconography.
+            Customize your style direction, separated color palette (shades, primary & secondary colors), libraries, and typography.
           </p>
         </motion.div>
 
@@ -99,31 +131,81 @@ export default function StepDesignVibe({ onNext, onBack }) {
           </div>
         </motion.div>
 
-        {/* Colors */}
+        {/* 1. NEUTRAL SHADES GROUP (White to Black) */}
+        <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
+              NEUTRAL SHADES (WHITE TO BLACK) — Select multiple
+            </label>
+            {shades?.length > 0 && (
+              <span style={{ fontSize: '0.7rem', color: 'var(--color-accent-text)', fontFamily: 'var(--font-mono)' }}>
+                {shades.length} selected
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+            {NEUTRAL_SHADES.map((item) => {
+              const isSelected = shades.includes(item.hex)
+              return (
+                <motion.button
+                  key={item.hex}
+                  onClick={() => toggleShade(item.hex)}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                  type="button"
+                  title={`${item.label} (${item.hex})`}
+                  style={{
+                    width: '28px', height: '28px', borderRadius: '50%',
+                    background: item.hex,
+                    border: isSelected ? '2px solid #ffffff' : item.border || '2px solid transparent',
+                    cursor: 'pointer',
+                    boxShadow: isSelected
+                      ? item.hex === '#ffffff'
+                        ? '0 0 0 2px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.4)'
+                        : '0 0 0 2px rgba(99,102,241,0.8), 0 0 10px rgba(99,102,241,0.4)'
+                      : 'none',
+                    transition: 'all 150ms ease',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  {isSelected && (
+                    <Check size={14} color={['#ffffff', '#f3f4f6'].includes(item.hex) ? '#000000' : '#ffffff'} />
+                  )}
+                </motion.button>
+              )
+            })}
+          </div>
+        </motion.div>
+
+        {/* 2 & 3. PRIMARY & SECONDARY BRAND COLORS (Separated Colored Groups) */}
         <motion.div variants={staggerItem} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Primary Color Group */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
               PRIMARY BRAND COLOR
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-              {PRESET_COLORS.map((color) => (
-                <motion.button
-                  key={color}
-                  onClick={() => setDesign({ primaryColor: color })}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.9 }}
-                  type="button"
-                  aria-label={`Select color ${color}`}
-                  style={{
-                    width: '26px', height: '26px', borderRadius: '50%',
-                    background: color,
-                    border: primaryColor === color ? '2px solid white' : '2px solid transparent',
-                    cursor: 'pointer',
-                    boxShadow: primaryColor === color ? `0 0 0 2px ${color}80, 0 0 12px ${color}50` : 'none',
-                    transition: 'all 150ms ease',
-                  }}
-                />
-              ))}
+              {ACCENT_COLORS.map((item) => {
+                const isSelected = primaryColor === item.hex
+                return (
+                  <motion.button
+                    key={`pri-${item.hex}`}
+                    onClick={() => setDesign({ primaryColor: item.hex })}
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    type="button"
+                    title={`Primary ${item.label} (${item.hex})`}
+                    style={{
+                      width: '26px', height: '26px', borderRadius: '50%',
+                      background: item.hex,
+                      border: isSelected ? '2px solid white' : '2px solid transparent',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? `0 0 0 2px ${item.hex}80, 0 0 12px ${item.hex}60` : 'none',
+                      transition: 'all 150ms ease',
+                    }}
+                  />
+                )
+              })}
               <input
                 type="color"
                 value={primaryColor || '#6366f1'}
@@ -133,35 +215,38 @@ export default function StepDesignVibe({ onNext, onBack }) {
                   border: 'none', cursor: 'pointer', padding: 0,
                   background: 'transparent',
                 }}
-                aria-label="Custom color picker"
-                title="Choose custom color"
+                title="Custom Primary Color"
               />
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Secondary Color Group */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
               SECONDARY / ACCENT COLOR
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-              {PRESET_COLORS.map((color) => (
-                <motion.button
-                  key={`sec-${color}`}
-                  onClick={() => setDesign({ secondaryColor: color })}
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.9 }}
-                  type="button"
-                  aria-label={`Select secondary color ${color}`}
-                  style={{
-                    width: '26px', height: '26px', borderRadius: '50%',
-                    background: color,
-                    border: secondaryColor === color ? '2px solid white' : '2px solid transparent',
-                    cursor: 'pointer',
-                    boxShadow: secondaryColor === color ? `0 0 0 2px ${color}80, 0 0 12px ${color}50` : 'none',
-                    transition: 'all 150ms ease',
-                  }}
-                />
-              ))}
+              {ACCENT_COLORS.map((item) => {
+                const isSelected = secondaryColor === item.hex
+                return (
+                  <motion.button
+                    key={`sec-${item.hex}`}
+                    onClick={() => setDesign({ secondaryColor: item.hex })}
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    type="button"
+                    title={`Secondary ${item.label} (${item.hex})`}
+                    style={{
+                      width: '26px', height: '26px', borderRadius: '50%',
+                      background: item.hex,
+                      border: isSelected ? '2px solid white' : '2px solid transparent',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? `0 0 0 2px ${item.hex}80, 0 0 12px ${item.hex}60` : 'none',
+                      transition: 'all 150ms ease',
+                    }}
+                  />
+                )
+              })}
               <input
                 type="color"
                 value={secondaryColor || '#ec4899'}
@@ -171,8 +256,7 @@ export default function StepDesignVibe({ onNext, onBack }) {
                   border: 'none', cursor: 'pointer', padding: 0,
                   background: 'transparent',
                 }}
-                aria-label="Custom secondary color picker"
-                title="Choose custom secondary color"
+                title="Custom Secondary Color"
               />
             </div>
           </div>
@@ -185,7 +269,7 @@ export default function StepDesignVibe({ onNext, onBack }) {
           </label>
           <ChipSelector
             options={UI_LIBRARIES}
-            selected={uiLibraries || []}
+            selected={uiLibraries}
             onToggle={(val) => {
               const current = uiLibraries || []
               if (current.includes(val)) {
@@ -196,6 +280,18 @@ export default function StepDesignVibe({ onNext, onBack }) {
             }}
             multiSelect={true}
           />
+          {uiLibraries.includes('Other') && (
+            <motion.input
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              type="text"
+              className="input-glass"
+              placeholder="Specify custom UI library/framework (e.g. Mantine, Ant Design, Semantic UI)"
+              value={customUiLibrary || ''}
+              onChange={(e) => setDesign({ customUiLibrary: e.target.value })}
+              style={{ marginTop: '4px', fontSize: '0.85rem' }}
+            />
+          )}
         </motion.div>
 
         {/* Layout Concept */}
@@ -205,7 +301,7 @@ export default function StepDesignVibe({ onNext, onBack }) {
           </label>
           <ChipSelector
             options={LAYOUT_CONCEPTS}
-            selected={layoutConcepts || []}
+            selected={layoutConcepts}
             onToggle={(val) => {
               const current = layoutConcepts || []
               if (current.includes(val)) {
@@ -216,6 +312,18 @@ export default function StepDesignVibe({ onNext, onBack }) {
             }}
             multiSelect={true}
           />
+          {layoutConcepts.includes('Other') && (
+            <motion.input
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              type="text"
+              className="input-glass"
+              placeholder="Specify custom layout concept (e.g. Split Screen, Holy Grail, Masonry Grid)"
+              value={customLayoutConcept || ''}
+              onChange={(e) => setDesign({ customLayoutConcept: e.target.value })}
+              style={{ marginTop: '4px', fontSize: '0.85rem' }}
+            />
+          )}
         </motion.div>
 
         {/* Icon Set */}
@@ -229,10 +337,23 @@ export default function StepDesignVibe({ onNext, onBack }) {
             onToggle={(val) => setDesign({ iconSet: val })}
             multiSelect={false}
           />
+          {iconSet === 'Other' && (
+            <motion.input
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              type="text"
+              className="input-glass"
+              placeholder="Specify custom iconography set (e.g. Tabler Icons, Phosphor, Unicons)"
+              value={customIconSet || ''}
+              onChange={(e) => setDesign({ customIconSet: e.target.value })}
+              style={{ marginTop: '4px', fontSize: '0.85rem' }}
+            />
+          )}
         </motion.div>
 
         {/* Typography */}
         <motion.div variants={staggerItem} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          {/* Primary Typography */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
               PRIMARY TYPOGRAPHY
@@ -246,14 +367,27 @@ export default function StepDesignVibe({ onNext, onBack }) {
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   aria-pressed={typography === font}
-                  style={{ fontFamily: font, fontSize: '0.8rem' }}
+                  style={{ fontFamily: font !== 'Other' ? font : 'inherit', fontSize: '0.8rem' }}
                 >
                   {font}
                 </motion.button>
               ))}
             </div>
+            {typography === 'Other' && (
+              <motion.input
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                type="text"
+                className="input-glass"
+                placeholder="Specify custom font (e.g. Space Grotesk, Syne)"
+                value={customTypography || ''}
+                onChange={(e) => setDesign({ customTypography: e.target.value })}
+                style={{ fontSize: '0.82rem' }}
+              />
+            )}
           </div>
 
+          {/* Secondary Typography */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
               SECONDARY TYPOGRAPHY
@@ -267,12 +401,24 @@ export default function StepDesignVibe({ onNext, onBack }) {
                   whileTap={{ scale: 0.95 }}
                   type="button"
                   aria-pressed={secondaryTypography === font}
-                  style={{ fontFamily: font, fontSize: '0.8rem' }}
+                  style={{ fontFamily: font !== 'Other' ? font : 'inherit', fontSize: '0.8rem' }}
                 >
                   {font}
                 </motion.button>
               ))}
             </div>
+            {secondaryTypography === 'Other' && (
+              <motion.input
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                type="text"
+                className="input-glass"
+                placeholder="Specify secondary font (e.g. JetBrains Mono)"
+                value={customSecondaryTypography || ''}
+                onChange={(e) => setDesign({ customSecondaryTypography: e.target.value })}
+                style={{ fontSize: '0.82rem' }}
+              />
+            )}
           </div>
         </motion.div>
 
@@ -337,3 +483,4 @@ export default function StepDesignVibe({ onNext, onBack }) {
     </QuestionCard>
   )
 }
+

@@ -118,3 +118,8 @@ dist-manifest
 # OS-specific files
 .DS_Store
 Thumbs.db
+
+# AI Agent Skills & Configs
+.agents/
+.claude/
+skills-lock.json

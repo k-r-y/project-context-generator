@@ -13,6 +13,7 @@ import StepDatabase from './steps/StepDatabase'
 import StepRules from './steps/StepRules'
 import StepReview from './steps/StepReview'
 import useProjectStore from '@/store/useProjectStore'
+import SpotlightCard from '@/components/ui/SpotlightCard'
 import { synthesizeAll } from '@/lib/synthesize'
 import { slideVariants, slideTransition } from '@/lib/animationVariants'
 
@@ -185,9 +186,12 @@ export default function WizardShell() {
               animate="center"
               exit="exit"
               transition={slideTransition}
-              style={{ width: '100%', maxWidth: '520px' }}
+              className="transform-gpu"
+              style={{ width: '100%', maxWidth: '540px' }}
             >
-              <StepComponent onNext={handleNext} onBack={handleBack} onSubmit={handleSubmit} />
+              <SpotlightCard style={{ padding: '24px', borderRadius: '16px' }}>
+                <StepComponent onNext={handleNext} onBack={handleBack} onSubmit={handleSubmit} />
+              </SpotlightCard>
             </motion.div>
           </AnimatePresence>
         </div>

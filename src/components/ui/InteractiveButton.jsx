@@ -1,13 +1,12 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, forwardRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function RippleButton({ children, className, onClick, style, disabled, type = 'button', ...props }) {
+const InteractiveButton = forwardRef(({ children, className, onClick, style, disabled, type = 'button', ...props }, ref) => {
   const [ripples, setRipples] = useState([])
-  const buttonRef = useRef(null)
 
   const handleClick = (e) => {
     if (disabled) return
-    const rect = buttonRef.current.getBoundingClientRect()
+    const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const y = e.clientY - rect.top
     const id = Date.now()
@@ -21,13 +20,16 @@ export default function RippleButton({ children, className, onClick, style, disa
   }
 
   return (
-    <button
-      ref={buttonRef}
+    <motion.button
+      ref={ref}
       type={type}
-      className={className}
+      className={`transform-gpu ${className || ''}`}
       onClick={handleClick}
       disabled={disabled}
       style={{ position: 'relative', overflow: 'hidden', ...style }}
+      whileHover={disabled ? {} : { scale: 1.02, filter: 'brightness(1.06)' }}
+      whileTap={disabled ? {} : { scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 450, damping: 22 }}
       {...props}
     >
       <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'inherit' }}>
@@ -57,6 +59,10 @@ export default function RippleButton({ children, className, onClick, style, disa
           />
         ))}
       </AnimatePresence>
-    </button>
+    </motion.button>
   )
-}
+})
+
+InteractiveButton.displayName = 'InteractiveButton'
+
+export default InteractiveButton

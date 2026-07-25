@@ -87,7 +87,7 @@ export const checkmarkVariants = {
   visible: {
     pathLength: 1,
     opacity: 1,
-    transition: { duration: 0.3, ease: 'easeOut' },
+    transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
   },
 }
 
@@ -101,3 +101,31 @@ export const glowPulse = {
     transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
   },
 }
+
+export const springTransition = {
+  type: 'spring',
+  stiffness: 450,
+  damping: 25,
+}
+
+export const bentoGridContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
+    },
+  },
+}
+
+export const bentoGridCell = {
+  hidden: { opacity: 0, y: 15, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+  },
+}
+

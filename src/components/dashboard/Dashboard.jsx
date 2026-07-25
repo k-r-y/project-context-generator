@@ -13,7 +13,9 @@ import useProjectStore from '@/store/useProjectStore'
 import { getFirebaseInstance } from '@/lib/firebase'
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
 import { DOC_META } from '@/lib/downloadUtils'
-import { pageVariants } from '@/lib/animationVariants'
+import { pageVariants, bentoGridContainer, bentoGridCell } from '@/lib/animationVariants'
+import InteractiveButton from '@/components/ui/InteractiveButton'
+import Magnetic from '@/components/ui/Magnetic'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -149,17 +151,17 @@ export default function Dashboard() {
           <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
 
           {/* Edit / Preview Toggle */}
-          <button
+          <InteractiveButton
             className={isEditing ? 'btn-primary' : 'btn-ghost'}
             onClick={() => setIsEditing(!isEditing)}
             style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
           >
             {isEditing ? <Eye size={13} /> : <Edit size={13} />}
             <span className="hide-mobile">{isEditing ? 'View Markdown' : 'Edit'}</span>
-          </button>
+          </InteractiveButton>
 
           {/* Save to Cloud */}
-          <button
+          <InteractiveButton
             className="btn-ghost"
             onClick={handleSaveToCloud}
             disabled={saveLoading}
@@ -167,12 +169,12 @@ export default function Dashboard() {
           >
             <Cloud size={13} />
             <span className="hide-mobile">{saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}</span>
-          </button>
+          </InteractiveButton>
 
           {/* User Auth Profile */}
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
+              <InteractiveButton
                 className="btn-ghost"
                 onClick={() => navigate('/projects')}
                 style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)' }}
@@ -180,8 +182,8 @@ export default function Dashboard() {
               >
                 <Folder size={13} />
                 <span className="hide-mobile">{user.displayName || user.email.split('@')[0]}</span>
-              </button>
-              <button
+              </InteractiveButton>
+              <InteractiveButton
                 className="btn-ghost"
                 onClick={handleLogout}
                 style={{ padding: '6px' }}
@@ -189,16 +191,16 @@ export default function Dashboard() {
                 title="Logout"
               >
                 <LogOut size={15} />
-              </button>
+              </InteractiveButton>
             </div>
           ) : (
-            <button
+            <InteractiveButton
               className="btn-ghost"
               onClick={() => setShowAuth(true)}
               style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
             >
               <LogIn size={14} /> <span className="hide-mobile">Log in</span>
-            </button>
+            </InteractiveButton>
           )}
 
           <span className="hide-mobile" style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
@@ -216,34 +218,45 @@ export default function Dashboard() {
       </header>
 
       {/* Main layout */}
-      <div style={{
-        flex: 1,
-        display: 'grid',
-        gridTemplateColumns: '200px 1fr 260px',
-        overflow: 'hidden',
-      }} className="dashboard-grid">
-
+      <motion.div
+        variants={bentoGridContainer}
+        initial="hidden"
+        animate="visible"
+        style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: '200px 1fr 260px',
+          overflow: 'hidden',
+        }}
+        className="dashboard-grid"
+      >
         {/* Col 1 — Document nav */}
-        <aside style={{
-          borderRight: '1px solid var(--color-border)',
-          overflowY: 'auto',
-          padding: '16px 12px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-        }}>
+        <motion.aside
+          variants={bentoGridCell}
+          style={{
+            borderRight: '1px solid var(--color-border)',
+            overflowY: 'auto',
+            padding: '16px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2px',
+          }}
+        >
           <div className="label-xs" style={{ padding: '4px 8px', marginBottom: '8px' }}>
             Files
           </div>
           <DocumentNav activeDoc={activeDoc} onSelect={setActiveDoc} />
-        </aside>
+        </motion.aside>
 
         {/* Col 2 — Document viewer */}
-        <main style={{
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}>
+        <motion.main
+          variants={bentoGridCell}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
           {/* Mobile Document Selector Tabs */}
           <div
             className="mobile-doc-tabs"
@@ -262,7 +275,7 @@ export default function Dashboard() {
               const isActive = activeDoc === key
               const label = DOC_META[key]?.label || key.toUpperCase()
               return (
-                <button
+                <InteractiveButton
                   key={key}
                   onClick={() => setActiveDoc(key)}
                   className={`chip ${isActive ? 'chip-active' : ''}`}
@@ -275,7 +288,7 @@ export default function Dashboard() {
                   type="button"
                 >
                   {label}
-                </button>
+                </InteractiveButton>
               )
             })}
           </div>
@@ -324,23 +337,26 @@ export default function Dashboard() {
             isEditing={isEditing}
             onEditChange={handleEditChange}
           />
-        </main>
+        </motion.main>
 
         {/* Col 3 — Right panel */}
-        <aside style={{
-          borderLeft: '1px solid var(--color-border)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-        }}>
+        <motion.aside
+          variants={bentoGridCell}
+          style={{
+            borderLeft: '1px solid var(--color-border)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
           <div style={{ flexShrink: 0, borderBottom: '1px solid var(--color-border)' }}>
             <AIToggle activeDoc={activeDoc} />
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <MetricsChecklist />
           </div>
-        </aside>
-      </div>
+        </motion.aside>
+      </motion.div>
 
       {showAuth && (
         <AuthModal onClose={() => setShowAuth(false)} />

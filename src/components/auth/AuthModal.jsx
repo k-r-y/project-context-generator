@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { getFirebaseInstance } from '@/lib/firebase'
 import {
   signInWithEmailAndPassword,
@@ -8,6 +9,8 @@ import {
   signInWithPopup,
 } from 'firebase/auth'
 import useProjectStore from '@/store/useProjectStore'
+import { toast } from '@/store/useToastStore'
+import InteractiveButton from '@/components/ui/InteractiveButton'
 
 export default function AuthModal({ onClose }) {
   const { setUser } = useProjectStore()
@@ -37,6 +40,7 @@ export default function AuthModal({ onClose }) {
         email: credential.user.email,
         displayName: credential.user.displayName || credential.user.email.split('@')[0],
       })
+      toast.success('Successfully logged in')
       onClose()
     } catch (err) {
       console.error(err)
@@ -68,6 +72,7 @@ export default function AuthModal({ onClose }) {
           email: credential.user.email,
           displayName: name.trim() || credential.user.email.split('@')[0],
         })
+        toast.success('Account created successfully')
       } else {
         const credential = await signInWithEmailAndPassword(auth, email, password)
         setUser({
@@ -75,6 +80,7 @@ export default function AuthModal({ onClose }) {
           email: credential.user.email,
           displayName: credential.user.displayName || credential.user.email.split('@')[0],
         })
+        toast.success('Successfully logged in')
       }
       onClose()
     } catch (err) {
@@ -92,6 +98,7 @@ export default function AuthModal({ onClose }) {
       displayName: 'Guest User',
       isGuest: true,
     })
+    toast.success('Signed in as Guest')
     onClose()
   }
 
@@ -104,7 +111,7 @@ export default function AuthModal({ onClose }) {
       <div className="surface-elevated animate-fade-in-up" style={{ padding: '24px', maxWidth: '360px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h2 className="heading-md">{isSignUp ? 'Create account' : 'Sign in'}</h2>
-          <button className="btn-ghost" onClick={onClose} style={{ padding: '4px' }}>✕</button>
+          <InteractiveButton className="btn-ghost" onClick={onClose} style={{ padding: '4px' }}><X size={16} /></InteractiveButton>
         </div>
 
         {/* Removed !initialized warning block */}
@@ -121,7 +128,7 @@ export default function AuthModal({ onClose }) {
         )}
 
         {/* Google Sign In Button */}
-        <button
+        <InteractiveButton
           type="button"
           className="btn-secondary"
           onClick={handleGoogleSignIn}
@@ -159,7 +166,7 @@ export default function AuthModal({ onClose }) {
             />
           </svg>
           Continue with Google
-        </button>
+        </InteractiveButton>
 
         <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0', color: 'var(--color-text-muted)' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
@@ -209,14 +216,14 @@ export default function AuthModal({ onClose }) {
             />
           </div>
 
-          <button
+          <InteractiveButton
             className="btn-primary"
             type="submit"
             disabled={loading || !initialized}
             style={{ marginTop: '8px', padding: '11px', opacity: initialized ? 1 : 0.4 }}
           >
             {loading ? 'Processing…' : isSignUp ? 'Sign up' : 'Sign in'}
-          </button>
+          </InteractiveButton>
         </form>
 
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
@@ -237,7 +244,7 @@ export default function AuthModal({ onClose }) {
           <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
         </div>
 
-        <button
+        <InteractiveButton
           type="button"
           className="btn-secondary"
           onClick={handleGuestSignIn}
@@ -250,7 +257,7 @@ export default function AuthModal({ onClose }) {
           }}
         >
           Continue as Guest (Local Mode)
-        </button>
+        </InteractiveButton>
 
         {/* Removed Configure Custom Firebase Project link */}
       </div>

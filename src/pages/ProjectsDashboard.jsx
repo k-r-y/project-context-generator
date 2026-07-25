@@ -5,6 +5,7 @@ import { getFirebaseInstance } from '@/lib/firebase'
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import useProjectStore from '@/store/useProjectStore'
 import { toast } from '@/store/useToastStore'
+import InteractiveButton from '@/components/ui/InteractiveButton'
 
 export default function ProjectsDashboard() {
   const navigate = useNavigate()
@@ -89,13 +90,13 @@ export default function ProjectsDashboard() {
         borderBottom: '1px solid var(--color-border)',
         flexShrink: 0,
       }}>
-        <button
+        <InteractiveButton
           className="btn-ghost"
           onClick={() => navigate('/')}
           style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
         >
           <ArrowLeft size={14} /> Back
-        </button>
+        </InteractiveButton>
         <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>
           My Saved Projects
         </span>
@@ -148,9 +149,9 @@ export default function ProjectsDashboard() {
             <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', maxWidth: '280px', lineHeight: 1.5 }}>
               Generate custom context documentations, log in to your account, and hit Save to cloud.
             </span>
-            <button className="btn-primary" onClick={() => navigate('/wizard')} style={{ marginTop: '10px' }}>
+            <InteractiveButton className="btn-primary" onClick={() => navigate('/wizard')} style={{ marginTop: '10px' }}>
               Create a project
-            </button>
+            </InteractiveButton>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -195,7 +196,7 @@ export default function ProjectsDashboard() {
                     </div>
                   </div>
 
-                  <button
+                  <InteractiveButton
                     type="button"
                     className="btn-ghost"
                     style={{ padding: '8px', color: 'var(--color-danger)' }}
@@ -203,7 +204,7 @@ export default function ProjectsDashboard() {
                     aria-label="Delete project"
                   >
                     <Trash2 size={15} />
-                  </button>
+                  </InteractiveButton>
                 </div>
               )
             })}

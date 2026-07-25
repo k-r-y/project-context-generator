@@ -16,8 +16,13 @@ export default function ProgressBar({ current, total }) {
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        style={{ height: '100%', background: 'var(--color-accent)' }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          height: '100%',
+          background: 'linear-gradient(90deg, var(--color-accent) 0%, #818cf8 100%)',
+          boxShadow: '0 0 10px rgba(99,102,241,0.6)',
+          position: 'relative',
+        }}
       />
     </div>
   )

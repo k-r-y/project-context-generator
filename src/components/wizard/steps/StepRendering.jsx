@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Globe, Plus } from 'lucide-react'
+import { Globe, Plus, Check } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
 import ChipSelector from '../ChipSelector'
 import useProjectStore from '@/store/useProjectStore'
@@ -164,7 +164,7 @@ export default function StepRendering({ onNext, onBack }) {
                       {opt.description}
                     </div>
                   </div>
-                  {isActive && <span style={{ fontSize: '10px', color: 'var(--color-accent-text)', marginTop: '2px' }}>✓</span>}
+                  {isActive && <Check size={14} style={{ color: 'var(--color-accent-text)', marginTop: '2px' }} />}
                 </motion.button>
               )
             })}

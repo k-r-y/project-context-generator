@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Layers, Plus } from 'lucide-react'
+import { Layers, Plus, Check } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
 import ChipSelector from '../ChipSelector'
 import useProjectStore from '@/store/useProjectStore'
@@ -335,7 +335,7 @@ export default function StepStack({ onNext, onBack }) {
               color: 'rgba(255,255,255,0.7)',
             }}
           >
-            ✓ Selected: <strong style={{ color: '#c4b5fd' }}>{selected.join(', ')}</strong>
+            <Check size={14} style={{ display: 'inline', color: '#c4b5fd', marginRight: '4px', verticalAlign: 'middle' }} /> Selected: <strong style={{ color: '#c4b5fd' }}>{selected.join(', ')}</strong>
           </motion.div>
         )}
 

@@ -4,8 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, FileText, Zap, Package, Settings, LogIn, LogOut, Folder } from 'lucide-react'
 import TypewriterText from '@/components/ui/TypewriterText'
 import useProjectStore from '@/store/useProjectStore'
+import { toast } from '@/store/useToastStore'
 import AuthModal from '@/components/auth/AuthModal'
 import FirebaseConfigModal from '@/components/auth/FirebaseConfigModal'
+import ShinyText from '@/components/ui/ShinyText'
+import Magnetic from '@/components/ui/Magnetic'
+import InteractiveButton from '@/components/ui/InteractiveButton'
 
 const ease = [0.16, 1, 0.3, 1]
 
@@ -50,6 +54,7 @@ export default function LandingPage() {
   const handleLogout = () => {
     setUser(null)
     setUserProjects([])
+    toast.info('Logged out')
   }
 
   return (
@@ -74,28 +79,28 @@ export default function LandingPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
+              <InteractiveButton
                 className="btn-ghost"
                 onClick={() => navigate('/projects')}
                 style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}
               >
                 <Folder size={13} /> Projects
-              </button>
+              </InteractiveButton>
               <span className="label-xs" style={{ color: 'var(--color-text-secondary)' }}>
                 {user.displayName || user.email.split('@')[0]}
               </span>
-              <button className="btn-ghost" onClick={handleLogout} style={{ padding: '6px' }} title="Logout">
+              <InteractiveButton className="btn-ghost" onClick={handleLogout} style={{ padding: '6px' }} title="Logout">
                 <LogOut size={15} />
-              </button>
+              </InteractiveButton>
             </div>
           ) : (
-            <button
+            <InteractiveButton
               className="btn-ghost"
               onClick={() => setShowAuth(true)}
               style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
             >
               <LogIn size={14} /> Log in
-            </button>
+            </InteractiveButton>
           )}
         </div>
       </div>
@@ -109,7 +114,7 @@ export default function LandingPage() {
         {/* Eyebrow */}
         <motion.div variants={item} transition={{ duration: 0.5, ease }} style={{ marginBottom: '32px' }}>
           <span className="badge badge-neutral">
-            Project Context Generator
+            <ShinyText text="Project Context Generator" speed={3.5} />
           </span>
         </motion.div>
 
@@ -180,36 +185,32 @@ export default function LandingPage() {
           transition={{ duration: 0.5, ease }}
           style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '12px' }}
         >
-          <motion.button
+          <InteractiveButton
             className="btn-primary"
             onClick={() => navigate('/wizard')}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
             style={{ padding: '12px 24px', fontSize: '0.9rem', fontWeight: 600 }}
           >
             Start building <ArrowRight size={15} />
-          </motion.button>
+          </InteractiveButton>
 
           {user && (
-            <motion.button
+            <InteractiveButton
               className="btn-secondary"
               onClick={() => navigate('/projects')}
-              whileTap={{ scale: 0.97 }}
               style={{ padding: '12px 20px', fontSize: '0.9rem' }}
             >
               View Saved Projects
-            </motion.button>
+            </InteractiveButton>
           )}
 
           {hasPrevious && (
-            <motion.button
+            <InteractiveButton
               className="btn-secondary"
               onClick={() => navigate('/dashboard')}
-              whileTap={{ scale: 0.97 }}
               style={{ padding: '12px 20px', fontSize: '0.9rem' }}
             >
               Resume · {projectMeta.name || 'previous session'}
-            </motion.button>
+            </InteractiveButton>
           )}
         </motion.div>
 

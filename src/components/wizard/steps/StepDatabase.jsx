@@ -199,10 +199,10 @@ export default function StepDatabase({ onNext, onBack }) {
     const parsed = parseSchema(pasteContent)
     if (parsed && parsed.length > 0) {
       setSchema({ entities: parsed })
-      setPasteContent('')
-      showStatus('success', `Successfully imported ${parsed.length} tables from text!`)
+      setSchemaExpanded(true)
+      showStatus('success', `Successfully imported ${parsed.length} table${parsed.length > 1 ? 's' : ''}!`)
     } else {
-      showStatus('error', 'Could not parse any tables. Ensure standard SQL CREATE TABLE statements or JSON array format.')
+      showStatus('error', 'Could not parse any CREATE TABLE statements or JSON schema. Check SQL syntax or quotes.')
     }
   }
 
@@ -213,12 +213,14 @@ export default function StepDatabase({ onNext, onBack }) {
     const reader = new FileReader()
     reader.onload = (evt) => {
       const text = evt.target.result
+      setPasteContent(text)
       const parsed = parseSchema(text)
       if (parsed && parsed.length > 0) {
         setSchema({ entities: parsed })
-        showStatus('success', `Successfully imported ${parsed.length} tables from "${file.name}"!`)
+        setSchemaExpanded(true)
+        showStatus('success', `Successfully imported ${parsed.length} table${parsed.length > 1 ? 's' : ''} from "${file.name}"!`)
       } else {
-        showStatus('error', `Could not parse schema from "${file.name}". Check file syntax.`)
+        showStatus('error', `Could not parse CREATE TABLE statements from "${file.name}". Check if the file contains CREATE TABLE syntax.`)
       }
     }
     reader.readAsText(file)
@@ -306,7 +308,7 @@ export default function StepDatabase({ onNext, onBack }) {
                       }}
                     >
                       <span>{value}</span>
-                      {isActive && <span>✓</span>}
+                      {isActive && <Check size={14} color="#14b8a6" />}
                     </motion.button>
                   )
                 })}
@@ -344,7 +346,7 @@ export default function StepDatabase({ onNext, onBack }) {
                           {opt.desc}
                         </span>
                       </div>
-                      {isActive && <span style={{ fontSize: '0.9rem', color: '#14b8a6' }}>✓</span>}
+                      {isActive && <Check size={14} color="#14b8a6" />}
                     </motion.button>
                   )
                 })}

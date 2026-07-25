@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { DOC_META } from '@/lib/downloadUtils'
+import InteractiveButton from '@/components/ui/InteractiveButton'
 
 export default function DocumentNav({ activeDoc, onSelect }) {
   const docs = Object.entries(DOC_META)
@@ -9,7 +10,7 @@ export default function DocumentNav({ activeDoc, onSelect }) {
       {docs.map(([key, meta]) => {
         const isActive = activeDoc === key
         return (
-          <button
+          <InteractiveButton
             key={key}
             onClick={() => onSelect(key)}
             aria-current={isActive ? 'page' : undefined}
@@ -59,7 +60,7 @@ export default function DocumentNav({ activeDoc, onSelect }) {
                 }}
               />
             )}
-          </button>
+          </InteractiveButton>
         )
       })}
     </nav>

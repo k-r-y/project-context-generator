@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import useProjectStore from '@/store/useProjectStore'
 
 export default function FirebaseConfigModal({ onClose }) {
@@ -24,7 +25,7 @@ export default function FirebaseConfigModal({ onClose }) {
         parsed = JSON.parse(configText);
       } catch (e) {
         // Fallback for JS object syntax (keys without quotes, trailing semicolons)
-        const cleanText = configText.replace(/const\\s+firebaseConfig\\s*=\\s*/g, '').replace(/;/g, '').trim();
+        const cleanText = configText.replace(/const\s+firebaseConfig\s*=\s*/g, '').replace(/;/g, '').trim();
         parsed = new Function('return ' + cleanText)();
       }
 
@@ -48,7 +49,7 @@ export default function FirebaseConfigModal({ onClose }) {
       <div className="surface-elevated animate-fade-in-up" style={{ padding: '24px', maxWidth: '440px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h2 className="heading-md">Firebase Configuration</h2>
-          <button className="btn-ghost" onClick={onClose} style={{ padding: '4px' }}>✕</button>
+          <button className="btn-ghost" onClick={onClose} style={{ padding: '4px' }}><X size={16} /></button>
         </div>
 
         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginBottom: '16px', lineHeight: 1.5 }}>

@@ -107,10 +107,10 @@ Generate EXACTLY this structure:
 
 \`\`\`mermaid
 flowchart TD
-    Client["🖥️ Client (${pillars.architecture.stack[0] || 'React'})"]
-    Router["📡 Router / Middleware"]
-    Service["⚙️ Service Layer"]
-    DB[("🗄️ ${pillars.architecture.database || 'Database'}")]
+    Client["Client (${pillars.architecture.stack[0] || 'React'})"]
+    Router["Router / Middleware"]
+    Service["Service Layer"]
+    DB[("${pillars.architecture.database || 'Database'}")]
     
     Client -->|"${pillars.schema?.dataPattern || 'REST'} Request"| Router
     Router -->|"Validated + Authed"| Service

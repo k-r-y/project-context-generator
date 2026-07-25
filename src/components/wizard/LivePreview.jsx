@@ -50,18 +50,35 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
     preview += `## Architecture\n**${architecture.rendering}** — ${architecture.designPattern || 'pattern not selected'}\n\n`
   }
   if (currentStep >= 4 && design.vibe) {
-    preview += `## Design\n**${design.vibe}**${design.primaryColor ? ` · \`${design.primaryColor}\`` : ''}${design.secondaryColor ? ` · \`${design.secondaryColor}\`` : ''}\n\n`
+    const shadesBadges = design.shades?.length ? design.shades.map(s => `\`${s}\``).join(' ') : '`#ffffff` `#111827`'
+    const priBadge = design.primaryColor ? `\`${design.primaryColor}\`` : ''
+    const secBadge = design.secondaryColor ? `\`${design.secondaryColor}\`` : ''
     
-    if (design.typography || design.secondaryTypography) {
-      preview += `**Typography:** ${design.typography || 'Default'}${design.secondaryTypography ? ` / ${design.secondaryTypography}` : ''}\n\n`
+    preview += `## Design\n**${design.vibe}**\n`
+    preview += `- **Shades:** ${shadesBadges}\n`
+    if (priBadge) preview += `- **Primary:** ${priBadge}\n`
+    if (secBadge) preview += `- **Secondary:** ${secBadge}\n`
+    preview += `\n`
+    
+    const primaryFont = design.typography === 'Other' && design.customTypography ? design.customTypography : design.typography
+    const secondaryFont = design.secondaryTypography === 'Other' && design.customSecondaryTypography ? design.customSecondaryTypography : design.secondaryTypography
+    if (primaryFont || secondaryFont) {
+      preview += `**Typography:** ${primaryFont || 'Default'}${secondaryFont ? ` / ${secondaryFont}` : ''}\n\n`
     }
     
     if (design.uiLibraries?.length) {
-      preview += `**UI Libraries:** ${design.uiLibraries.join(', ')}\n\n`
+      const libs = design.uiLibraries.map(l => l === 'Other' && design.customUiLibrary ? design.customUiLibrary : l)
+      preview += `**UI Libraries:** ${libs.join(', ')}\n\n`
     }
     
+    if (design.iconSet) {
+      const icon = design.iconSet === 'Other' && design.customIconSet ? design.customIconSet : design.iconSet
+      preview += `**Iconography:** ${icon}\n\n`
+    }
+
     if (design.layoutConcepts?.length) {
-      preview += `**Layout:** ${design.layoutConcepts.join(', ')}\n\n`
+      const layouts = design.layoutConcepts.map(l => l === 'Other' && design.customLayoutConcept ? design.customLayoutConcept : l)
+      preview += `**Layout:** ${layouts.join(', ')}\n\n`
     }
     
     if (design.spacing || design.roundedCorners) {

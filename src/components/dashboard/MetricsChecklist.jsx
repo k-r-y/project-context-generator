@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import useProjectStore from '@/store/useProjectStore'
+import { checkmarkVariants, springTransition } from '@/lib/animationVariants'
 
 export default function MetricsChecklist() {
   const { generatedOutputs, toggleMetricDone } = useProjectStore()
@@ -33,8 +34,12 @@ export default function MetricsChecklist() {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${(doneCount / metrics.length) * 100}%` }}
-            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            style={{ height: '100%', background: 'var(--color-success)' }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            style={{
+              height: '100%',
+              background: 'var(--color-success)',
+              boxShadow: '0 0 8px rgba(34,197,94,0.4)',
+            }}
           />
         </div>
       )}
@@ -46,12 +51,16 @@ export default function MetricsChecklist() {
             Setup tasks will appear here after generation.
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             {metrics.map((metric) => (
-              <button
+              <motion.button
                 key={metric.id}
                 onClick={() => toggleMetricDone(metric.id)}
+                whileTap={{ scale: 0.97 }}
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+                transition={springTransition}
                 aria-pressed={metric.done}
+                className="transform-gpu"
                 style={{
                   display: 'flex',
                   alignItems: 'flex-start',
@@ -63,31 +72,45 @@ export default function MetricsChecklist() {
                   cursor: 'pointer',
                   textAlign: 'left',
                   width: '100%',
-                  transition: 'background 100ms ease',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
               >
                 {/* Checkbox */}
-                <div style={{
-                  width: '14px',
-                  height: '14px',
-                  borderRadius: '3px',
-                  border: metric.done ? 'none' : '1px solid var(--color-border-hover)',
-                  background: metric.done ? 'var(--color-success)' : 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  marginTop: '2px',
-                  transition: 'all 150ms ease',
-                }}>
-                  {metric.done && (
-                    <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                      <path d="M1 3L3.5 5.5L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
+                <motion.div
+                  animate={{
+                    scale: metric.done ? [1, 1.2, 1] : 1,
+                    backgroundColor: metric.done ? 'var(--color-success)' : 'transparent',
+                    borderColor: metric.done ? 'var(--color-success)' : 'var(--color-border-hover)',
+                  }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    width: '14px',
+                    height: '14px',
+                    borderRadius: '3px',
+                    border: '1px solid var(--color-border-hover)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginTop: '2px',
+                  }}
+                >
+                  <AnimatePresence>
+                    {metric.done && (
+                      <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                        <motion.path
+                          d="M1 3L3.5 5.5L8 1"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          variants={checkmarkVariants}
+                          initial="hidden"
+                          animate="visible"
+                        />
+                      </svg>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
                     fontSize: '0.78rem',
@@ -96,6 +119,7 @@ export default function MetricsChecklist() {
                     textDecoration: metric.done ? 'line-through' : 'none',
                     lineHeight: 1.5,
                     letterSpacing: '-0.01em',
+                    transition: 'color 150ms ease',
                   }}>
                     {metric.text}
                   </div>
@@ -105,7 +129,7 @@ export default function MetricsChecklist() {
                     </div>
                   )}
                 </div>
-              </button>
+              </motion.button>
             ))}
           </div>
         )}

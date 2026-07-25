@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { checkmarkVariants, springTransition } from '@/lib/animationVariants'
 
 /**
  * Multi-select chip grid for selecting options like tech stacks, vibes, etc.
@@ -31,10 +32,11 @@ export default function ChipSelector({
         return (
           <motion.button
             key={option}
-            className={`chip ${isActive ? 'chip-active' : ''}`}
+            className={`chip transform-gpu ${isActive ? 'chip-active' : ''}`}
             onClick={() => handleClick(option)}
-            whileTap={isDisabled ? {} : { scale: 0.96 }}
-            transition={{ duration: 0.1 }}
+            whileHover={isDisabled ? {} : { scale: 1.03, boxShadow: isActive ? '0 0 16px rgba(99,102,241,0.3)' : '0 0 10px rgba(255,255,255,0.06)' }}
+            whileTap={isDisabled ? {} : { scale: 0.94 }}
+            transition={springTransition}
             aria-pressed={isActive}
             disabled={isDisabled}
             type="button"
@@ -52,7 +54,31 @@ export default function ChipSelector({
               </span>
             )}
             <span>{option}</span>
-            {isActive && <span aria-hidden="true" style={{ fontSize: '0.7rem', opacity: 0.7, marginLeft: '2px' }}>✓</span>}
+            <AnimatePresence>
+              {isActive && (
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ duration: 0.15 }}
+                  aria-hidden="true"
+                  style={{ display: 'flex', alignItems: 'center', marginLeft: '2px' }}
+                >
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <motion.path
+                      d="M1 4L3.5 6.5L9 1"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      variants={checkmarkVariants}
+                      initial="hidden"
+                      animate="visible"
+                    />
+                  </svg>
+                </motion.span>
+              )}
+            </AnimatePresence>
           </motion.button>
         )
       })}

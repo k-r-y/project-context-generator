@@ -123,11 +123,11 @@ export function generateSystemArchitecture(answers) {
 
 \`\`\`mermaid
 flowchart TD
-    Client["🖥️ Client<br/>(${framework})"]
-    Middleware["🛡️ Middleware<br/>(${auth !== 'None' ? `${auth} Validation` : 'CORS + Validation'})"]
-    Service["⚙️ Service Layer<br/>(Business Logic)"]
-    DB[("🗄️ ${db}<br/>Database")]
-    Cache["⚡ Cache Layer<br/>(Optional)"]
+    Client["Client<br/>(${framework})"]
+    Middleware["Middleware<br/>(${auth !== 'None' ? `${auth} Validation` : 'CORS + Validation'})"]
+    Service["Service Layer<br/>(Business Logic)"]
+    DB[("${db}<br/>Database")]
+    Cache["Cache Layer<br/>(Optional)"]
 
     Client -->|"${dataPattern} Request"| Middleware
     Middleware -->|"Authorized"| Service
@@ -481,57 +481,49 @@ export function generateSystemDesign(answers) {
   const { meta, pillars } = answers
   const vibe = pillars.design.vibe || 'Dark Premium'
   const primaryHex = pillars.design.primaryColor || '#6366f1'
-  const font = pillars.design.typography || 'Inter'
-  const uiLibrary = pillars.design.uiLibrary || 'None'
-  const iconSet = pillars.design.iconSet || 'None'
-  const layoutConcept = pillars.design.layoutConcept || 'None'
+  const secondaryHex = pillars.design.secondaryColor || '#ec4899'
+  const shadesList = pillars.design.shades?.length ? pillars.design.shades.join(', ') : '#ffffff, #111827'
 
-  // Derive a secondary color (30° hue shift)
-  const secondaryHex = pillars.design.primaryColor
-    ? pillars.design.primaryColor.replace('#6366f1', '#8b5cf6') || '#a78bfa'
-    : '#a78bfa'
+  const font = pillars.design.typography === 'Other' && pillars.design.customTypography ? pillars.design.customTypography : pillars.design.typography || 'Inter'
+  const secondaryFont = pillars.design.secondaryTypography === 'Other' && pillars.design.customSecondaryTypography ? pillars.design.customSecondaryTypography : pillars.design.secondaryTypography
+
+  const uiLibrariesList = (pillars.design.uiLibraries || [])
+    .map(lib => lib === 'Other' && pillars.design.customUiLibrary ? pillars.design.customUiLibrary : lib)
+    .join(', ') || 'None'
+
+  const iconSet = pillars.design.iconSet === 'Other' && pillars.design.customIconSet ? pillars.design.customIconSet : pillars.design.iconSet || 'None'
+
+  const layoutConceptsList = (pillars.design.layoutConcepts || [])
+    .map(l => l === 'Other' && pillars.design.customLayoutConcept ? pillars.design.customLayoutConcept : l)
+    .join(', ') || 'None'
 
   return `# Design System & UI/UX Guidelines — ${meta.name}
 
 ## 1. Brand Identity & Theme
 - **Vibe/Style:** ${vibe}
+- **Primary Brand Color:** ${primaryHex}
+- **Secondary Accent Color:** ${secondaryHex}
+- **Neutral Shades (White to Black):** ${shadesList}
 - **Core Concept:** ${meta.name} uses a ${vibe.toLowerCase()} aesthetic — ${
     vibe === 'Dark Premium' ? `deep dark surfaces with glassmorphism cards, aurora gradient backgrounds, and ${primaryHex} accent glows to convey technical sophistication and premium quality.` :
-    vibe === 'Minimalist' ? `generous whitespace, restrained typography, and a single ${primaryHex} accent color to keep the focus entirely on the content and user actions.` :
-    vibe === 'Bold & Vibrant' ? `strong ${primaryHex} color blocks, heavy typography, and high-contrast layouts to create a confident, energetic experience.` :
-    vibe === 'Corporate' ? `clean layouts, professional ${primaryHex} accents, and accessibility-first design to convey reliability and trust to business stakeholders.` :
-    vibe === 'Playful' ? `rounded corners, bouncy micro-animations, and bright ${primaryHex} accents to make the experience feel approachable and fun.` :
+    vibe === 'Minimalist' ? `generous whitespace, restrained typography, and a clean color palette (Primary: ${primaryHex}, Secondary: ${secondaryHex}, Shades: ${shadesList}) to keep the focus entirely on the content and user actions.` :
+    vibe === 'Bold & Vibrant' ? `strong color blocks (${primaryHex}, ${secondaryHex}), heavy typography, and high-contrast layouts to create a confident, energetic experience.` :
+    vibe === 'Corporate' ? `clean layouts, professional accents (${primaryHex}, ${secondaryHex}), and accessibility-first design to convey reliability and trust to business stakeholders.` :
+    vibe === 'Playful' ? `rounded corners, bouncy micro-animations, and bright accents (${primaryHex}, ${secondaryHex}) to make the experience feel approachable and fun.` :
     vibe === 'Retro/Cyberpunk' ? `high-contrast neon scanlines, dark retro terminal layouts, custom glowing borders, and monospace font accents to make the UI look like a futuristic deck.` :
     `intentionally raw, stark typography, and minimal decoration to create an opinionated interface.`
   }
 
 ## 2. Component Design Tokens
-- **UI & Frontend Library:** ${uiLibrary} — ${
-    uiLibrary === 'Shadcn/ui' ? 'Radix UI primitives paired with Tailwind CSS classes for custom styling. Accessible, copy-paste components.' :
-    uiLibrary === 'Tailwind CSS' ? 'Utility-first CSS styling directly in markup. Focus on hover/focus utilities and responsive breakpoints.' :
-    uiLibrary === 'Bootstrap' ? 'Traditional container-grid styling. Standard theme variable modifications in SCSS.' :
-    uiLibrary === 'Material UI' ? 'Material Design guidelines with custom theme configuration overrides.' :
-    uiLibrary === 'Chakra UI' ? 'Compostable styling using theme-aware style props.' :
-    'Vanilla CSS variables for styling. Maximum flexibility and zero library dependencies.'
-  }
-- **Iconography Set:** ${iconSet} — ${
-    iconSet === 'Lucide Icons' ? 'Lucide clean SVG icons, imported and styled with uniform parameters: 20x20px sizing, 2px stroke.' :
-    iconSet === 'FontAwesome' ? 'FontAwesome solid/regular icons, consistent weight and size parameters.' :
-    iconSet === 'Heroicons' ? 'Tailwind-designed clean vector outline icons, using outline/solid classes.' :
-    iconSet === 'Radix Icons' ? 'Radix 15x15 minimalist outline glyphs.' :
-    'Standard inline SVG representations or local assets.'
-  }
-- **Layout Concept:** ${layoutConcept} — ${
-    layoutConcept === 'Glassmorphism' ? 'Backdrop-filter blur(12px) overlays with translucent borders (rgba 255,255,255,0.08) and subtle radial glows.' :
-    layoutConcept === 'Bento Grid' ? 'Structured Grid container with varying column/row span cards, 16px/24px gap variables, and uniform padding.' :
-    layoutConcept === 'Flat Minimalist' ? 'Solid neutral backdrops, thin subtle borders, zero shadows, high typographical focus.' :
-    layoutConcept === 'Neumorphic' ? 'Soft convex surface curves with dual offset shadows (one light, one dark) creating a tactile extruded feel.' :
-    'Standard CSS grid and flexbox flow layouts.'
-  }
+- **Typography:** ${font}${secondaryFont ? ` / ${secondaryFont}` : ''}
+- **UI & Frontend Libraries:** ${uiLibrariesList}
+- **Iconography Set:** ${iconSet}
+- **Layout Concept:** ${layoutConceptsList}
 
-## 3. Color Palette
-- **Primary:** \`${primaryHex}\` — CTAs, interactive elements, active states, links
-- **Secondary:** \`${secondaryHex}\` — Supporting accents, hover glow, gradient pairs
+## 3. Color Palette & Shades (Separated Groups)
+- **1. Neutral Shades (White to Black):** \`${shadesList}\` — Base surface backgrounds, text contrast, borders
+- **2. Primary Brand Color:** \`${primaryHex}\` — Main CTAs, primary interactive elements, active states
+- **3. Secondary Accent Color:** \`${secondaryHex}\` — Supporting accents, hover glows, gradient pairs
 - **Background:** \`#060614\` — Root page background
 - **Surface:** \`#0d0d1f\` — Cards, panels, sidebars
 - **Surface Elevated:** \`#12122a\` — Modals, dropdowns, tooltips
@@ -614,8 +606,8 @@ export function generateSystemDesign(answers) {
   - Page transitions → Framer Motion AnimatePresence fade
 
 - **Rules:**
-  - ✅ Use: \`transform\`, \`opacity\`, \`filter\`
-  - ❌ Never animate: \`width\`, \`height\`, \`margin\`, \`top\`, \`left\`, \`padding\` (causes layout thrash)
+  - **Do:** Use \`transform\`, \`opacity\`, \`filter\`
+  - **Avoid:** Never animate \`width\`, \`height\`, \`margin\`, \`top\`, \`left\`, \`padding\` (causes layout thrash)
   - All animations must respect \`@media (prefers-reduced-motion: reduce)\`
 
 ## 7. Accessibility (a11y)
