@@ -532,6 +532,12 @@ textarea.input-glass {
   animation: fade-in-up 0.4s var(--ease-out) both;
 }
 
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

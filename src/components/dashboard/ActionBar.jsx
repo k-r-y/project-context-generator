@@ -32,7 +32,7 @@ export default function ActionBar({ activeDoc, content }) {
           : <motion.span key="ic" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}><Icon size={13} /></motion.span>
         }
       </AnimatePresence>
-      {flash === id ? successLabel : label}
+      <span className="hide-mobile">{flash === id ? successLabel : label}</span>
     </motion.button>
   )
 

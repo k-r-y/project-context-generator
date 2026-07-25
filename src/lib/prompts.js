@@ -158,6 +158,21 @@ Make every section specific to the chosen stack. Fill in all table cells with re
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildSchemaPrompt(answers) {
   const { meta, pillars } = answers
+  const entities = pillars.schema?.entities || []
+
+  let customSchemaContext = ''
+  if (entities.length > 0) {
+    customSchemaContext = `USER-DEFINED DATABASE TABLES (YOU MUST USE THESE EXACT TABLES, COLUMNS, TYPES, AND CONSTRAINTS):\n`
+    entities.forEach((entity) => {
+      customSchemaContext += `Table: ${entity.name}\n`
+      entity.columns.forEach((col) => {
+        customSchemaContext += `- Column: "${col.name}" | Type: ${col.type} | Constraints: ${col.constraints || 'None'} | Description: ${col.description || 'None'}\n`
+      })
+      customSchemaContext += `\n`
+    })
+    customSchemaContext += `Please generate the Mermaid ERD and the Markdown tables using exactly the tables and columns specified above. Do not invent other tables unless absolutely necessary to complete the core user requirements.\n\n`
+  }
+
   return `You are a senior database architect. Generate a Schema document in Markdown using EXACTLY this structure. Include complete Mermaid ERD, full markdown tables with all columns, RLS policies, and migration strategy.
 
 PROJECT NAME: ${meta.name}
@@ -165,60 +180,31 @@ DATABASE: ${pillars.architecture.database || 'Postgres'}
 DATA PATTERN: ${pillars.schema?.dataPattern || 'REST'}
 DB NAMING: ${pillars.rules?.dbNaming || 'snake_case (plural)'}
 
+${customSchemaContext}
 Generate EXACTLY this structure:
 
 # Database Schema & Data Models — ${meta.name}
 
 ## 1. Entity Relationship Diagram (ERD)
 
-\`\`\`mermaid
-erDiagram
-    USERS {
-        uuid id PK
-        string email
-        string role
-        timestamp created_at
-    }
-    [ENTITY_2] {
-        uuid id PK
-        uuid user_id FK
-        string name
-        timestamp created_at
-    }
-    USERS ||--o{ [ENTITY_2] : "has many"
-\`\`\`
+[Render the Mermaid ERD code block here mapping all relationships]
 
 ## 2. Tables
 
-### \`users\`
-| Column | Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| \`id\` | UUID | Primary Key, Default: gen_random_uuid() | Unique identifier |
-| \`email\` | VARCHAR(255) | Unique, Not Null | User's login email |
-| \`role\` | ENUM('user','admin') | Default: 'user', Not Null | System permissions |
-| \`created_at\` | TIMESTAMPTZ | Default: NOW(), Not Null | Record creation timestamp |
-| \`updated_at\` | TIMESTAMPTZ | Default: NOW(), Not Null | Last update timestamp |
-
-[Generate 2-3 more domain-specific tables for this project based on its purpose: ${meta.pitch}. Each table must have the full column definition with all 4 columns filled in the table format above.]
+[Generate markdown tables for all of the tables. Each table must have columns for Column, Type, Constraints, and Description, properly populated.]
 
 ## 3. Row Level Security (RLS) Policies
 
-### Table: \`users\`
-- **Select:** Users can only view their own profile row (\`auth.uid() = id\`)
-- **Update:** Users can update their own profile. Admins can update any row.
-- **Insert:** Handled by auth trigger on signup — not exposed to client.
-- **Delete:** Admin-only.
-
-[Generate RLS policies for each domain table specific to ${meta.name}]
+[Generate specific security rules/policies for each table. If Firestore, write Firestore Security Rules. If Postgres/Supabase, write standard SQL policies (ALTER TABLE ... ENABLE ROW LEVEL SECURITY; CREATE POLICY ...).]
 
 ## 4. Migrations & Seeding Strategy
-- **Tool:** [Prisma Migrate / Supabase CLI / Drizzle / raw SQL files]
-- **Convention:** Migration files named \`YYYYMMDDHHMMSS_description.sql\`
-- **Seeding:** Development seeds live in \`/seed/dev.sql\`. Never run in production.
-- **Rollback:** Each migration must have a corresponding down migration.
-- **Indexing:** Add indexes on all foreign key columns and frequently filtered columns (e.g., \`email\`, \`created_at\`, \`status\`).
+- **Tool:** [Provide tool recommendations based on stack, e.g. Prisma Migrate, Supabase CLI, Drizzle, etc.]
+- **Convention:** Migration files named YYYYMMDDHHMMSS_description.sql
+- **Seeding:** Development seeds live in /seed/dev.sql
+- **Rollback:** How to handle rollback.
+- **Indexing:** Recommend indices for keys and frequently filtered columns.
 
-Generate all table definitions with real column names relevant to "${meta.pitch}". No placeholder column names.`
+Make every section specific to the chosen stack. Fill in all table cells with real values.`
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

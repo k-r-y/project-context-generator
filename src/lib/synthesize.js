@@ -188,12 +188,144 @@ export function generateSystemSchema(answers) {
   const db = pillars.architecture.database || 'Postgres'
   const dbNaming = pillars.rules?.dbNaming || 'snake_case (plural)'
   const isNoSQL = db === 'Firebase'
+  const entities = pillars.schema?.entities || []
   const migrationType = pillars.architecture.stack.includes('Prisma') ? 'Prisma Migrate' :
     db === 'Supabase' ? 'Supabase CLI' :
     db === 'Firebase' ? 'Firebase Admin SDK' :
     'Raw SQL files'
 
-  const erd = isNoSQL ? `\`\`\`mermaid
+  let erd = ''
+  let tablesMarkdown = ''
+  let rlsPolicies = ''
+
+  if (entities.length > 0) {
+    // 1. Dynamic Mermaid ERD
+    erd = '```mermaid\nerDiagram\n'
+    entities.forEach((entity) => {
+      erd += `    ${entity.name.toUpperCase()} {\n`
+      entity.columns.forEach((col) => {
+        // Clean names for Mermaid syntax safety
+        const cleanName = col.name.replace(/[^a-zA-Z0-9_]/g, '')
+        const cleanType = col.type.replace(/[^a-zA-Z0-9_]/g, '')
+        const pkOrFk = col.constraints.toUpperCase().includes('PRIMARY KEY') ? 'PK' :
+                       (col.constraints.toUpperCase().includes('FK') || col.constraints.toUpperCase().includes('REFERENCES')) ? 'FK' : ''
+        erd += `        ${cleanType || 'varchar'} ${cleanName} ${pkOrFk}\n`
+      })
+      erd += `    }\n`
+    })
+
+    // Relationships mapping
+    const relationships = []
+    entities.forEach((eB) => {
+      eB.columns.forEach((col) => {
+        const colUpper = col.constraints.toUpperCase()
+        const isFK = colUpper.includes('FK') || colUpper.includes('REFERENCES')
+        let referencedTable = null
+
+        const refMatch = col.constraints.match(/REFERENCES\s+([a-zA-Z_0-9]+)/i)
+        if (refMatch) {
+          referencedTable = refMatch[1]
+        } else if (isFK || col.name.endsWith('_id') || col.name.endsWith('Id')) {
+          const possibleBaseName = col.name.replace(/(_id|Id)$/, '')
+          const matchingTable = entities.find((e) =>
+            e.name.toLowerCase() === possibleBaseName.toLowerCase() ||
+            e.name.toLowerCase() === (possibleBaseName + 's').toLowerCase()
+          )
+          if (matchingTable) {
+            referencedTable = matchingTable.name
+          }
+        }
+
+        if (referencedTable) {
+          const rel = `    ${referencedTable.toUpperCase()} ||--o{ ${eB.name.toUpperCase()} : "fk_${col.name}"`
+          if (!relationships.includes(rel)) {
+            relationships.push(rel)
+          }
+        }
+      })
+    })
+
+    if (relationships.length > 0) {
+      erd += relationships.join('\n') + '\n'
+    }
+    erd += '```'
+
+    // 2. Dynamic Tables
+    if (isNoSQL) {
+      tablesMarkdown = '### Firestore Collections\n\n'
+      entities.forEach((entity) => {
+        tablesMarkdown += `**\`/${entity.name}/{docId}\`**\n`
+        tablesMarkdown += `| Field | Type | Constraints | Description |\n`
+        tablesMarkdown += `| :--- | :--- | :--- | :--- |\n`
+        entity.columns.forEach((col) => {
+          tablesMarkdown += `| \`${col.name}\` | ${col.type} | ${col.constraints || '-'} | ${col.description || '-'} |\n`
+        })
+        tablesMarkdown += '\n'
+      })
+    } else {
+      entities.forEach((entity) => {
+        tablesMarkdown += `### Table: \`${entity.name}\`\n\n`
+        tablesMarkdown += `| Column | Type | Constraints | Description |\n`
+        tablesMarkdown += `| :--- | :--- | :--- | :--- |\n`
+        entity.columns.forEach((col) => {
+          tablesMarkdown += `| \`${col.name}\` | ${col.type} | ${col.constraints || '-'} | ${col.description || '-'} |\n`
+        })
+        tablesMarkdown += '\n'
+      })
+    }
+
+    // 3. Dynamic RLS Policies
+    if (isNoSQL) {
+      rlsPolicies = `### Firebase Security Rules\n\`\`\`javascript\nrules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n`
+      entities.forEach((entity) => {
+        const hasUserId = entity.columns.some(c => c.name.toLowerCase() === 'user_id' || c.name.toLowerCase() === 'userid')
+        rlsPolicies += `    // Rule for ${entity.name} collection\n`
+        rlsPolicies += `    match /${entity.name}/{docId} {\n`
+        if (hasUserId) {
+          rlsPolicies += `      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;\n`
+          rlsPolicies += `      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;\n`
+        } else {
+          rlsPolicies += `      allow read: if true;\n`
+          rlsPolicies += `      allow write: if request.auth != null;\n`
+        }
+        rlsPolicies += `    }\n\n`
+      })
+      rlsPolicies += `  }\n}\n\`\`\``
+    } else {
+      let rlsSql = '-- Enable RLS on all tables\n'
+      entities.forEach((entity) => {
+        rlsSql += `ALTER TABLE ${entity.name} ENABLE ROW LEVEL SECURITY;\n`
+      })
+      rlsSql += '\n'
+
+      entities.forEach((entity) => {
+        const hasUserId = entity.columns.some(c => c.name.toLowerCase() === 'user_id' || c.name.toLowerCase() === 'userid')
+        rlsPolicies += `### Table: \`${entity.name}\`\n`
+        if (hasUserId) {
+          rlsPolicies += `- **Select:** Users can only view their own records: \`auth.uid() = user_id\`\n`
+          rlsPolicies += `- **Insert:** Authenticated users can insert records owned by themselves: \`auth.uid() = user_id\`\n`
+          rlsPolicies += `- **Update/Delete:** Owner only.\n\n`
+
+          rlsSql += `-- Policies for ${entity.name}\n`
+          rlsSql += `CREATE POLICY "${entity.name}_select_own" ON ${entity.name} FOR SELECT USING (auth.uid() = user_id);\n`
+          rlsSql += `CREATE POLICY "${entity.name}_insert_own" ON ${entity.name} FOR INSERT WITH CHECK (auth.uid() = user_id);\n`
+          rlsSql += `CREATE POLICY "${entity.name}_update_own" ON ${entity.name} FOR UPDATE USING (auth.uid() = user_id);\n`
+          rlsSql += `CREATE POLICY "${entity.name}_delete_own" ON ${entity.name} FOR DELETE USING (auth.uid() = user_id);\n\n`
+        } else {
+          rlsPolicies += `- **Select:** Public read allowed.\n`
+          rlsPolicies += `- **Insert/Update/Delete:** Authenticated users only.\n\n`
+
+          rlsSql += `-- Policies for ${entity.name}\n`
+          rlsSql += `CREATE POLICY "${entity.name}_select_all" ON ${entity.name} FOR SELECT USING (true);\n`
+          rlsSql += `CREATE POLICY "${entity.name}_write_auth" ON ${entity.name} FOR ALL TO authenticated USING (true);\n\n`
+        }
+      })
+
+      rlsPolicies += `\`\`\`sql\n${rlsSql}\`\`\``
+    }
+  } else {
+    // Standard Fallbacks
+    erd = isNoSQL ? `\`\`\`mermaid
 erDiagram
     USERS {
         string id PK
@@ -229,15 +361,7 @@ erDiagram
     users ||--o{ items : "has many"
 \`\`\``
 
-  return `# Database Schema & Data Models — ${meta.name}
-
-## 1. Entity Relationship Diagram (ERD)
-
-${erd}
-
-## 2. Tables
-
-${isNoSQL ? `### Firestore Collections
+    tablesMarkdown = isNoSQL ? `### Firestore Collections
 
 **\`/users/{userId}\`**
 | Field | Type | Description |
@@ -270,11 +394,9 @@ ${isNoSQL ? `### Firestore Collections
 | \`name\` | VARCHAR(200) | Not Null | Item display name |
 | \`status\` | VARCHAR(20) | Default: \`'active'\`, Not Null | \`'active'\`, \`'archived'\`, \`'deleted'\` |
 | \`created_at\` | TIMESTAMPTZ | Default: \`NOW()\`, Not Null | Creation timestamp |
-| \`updated_at\` | TIMESTAMPTZ | Default: \`NOW()\`, Not Null | Last update timestamp |`}
+| \`updated_at\` | TIMESTAMPTZ | Default: \`NOW()\`, Not Null | Last update timestamp |`
 
-## 3. Row Level Security (RLS) Policies
-
-${isNoSQL ? `### Firebase Security Rules
+    rlsPolicies = isNoSQL ? `### Firebase Security Rules
 \`\`\`javascript
 rules_version = '2';
 service cloud.firestore {
@@ -319,7 +441,22 @@ CREATE POLICY "items_select_own" ON items FOR SELECT USING (auth.uid() = user_id
 CREATE POLICY "items_insert_own" ON items FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "items_update_own" ON items FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "items_delete_own" ON items FOR DELETE USING (auth.uid() = user_id);
-\`\`\``}
+\`\`\``
+  }
+
+  return `# Database Schema & Data Models — ${meta.name}
+
+## 1. Entity Relationship Diagram (ERD)
+
+${erd}
+
+## 2. Tables
+
+${tablesMarkdown}
+
+## 3. Row Level Security (RLS) Policies
+
+${rlsPolicies}
 
 ## 4. Migrations & Seeding Strategy
 - **Tool:** ${migrationType}

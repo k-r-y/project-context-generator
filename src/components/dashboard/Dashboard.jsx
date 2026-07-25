@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { RotateCcw, Cloud, LogIn, LogOut, Settings, Edit, Eye, Save } from 'lucide-react'
+import { RotateCcw, Cloud, LogIn, LogOut, Settings, Edit, Eye, Save, Folder, User } from 'lucide-react'
 import DocumentNav from './DocumentNav'
 import DocumentViewer from './DocumentViewer'
 import MetricsChecklist from './MetricsChecklist'
@@ -155,7 +155,7 @@ export default function Dashboard() {
             style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
           >
             {isEditing ? <Eye size={13} /> : <Edit size={13} />}
-            {isEditing ? 'View Markdown' : 'Edit'}
+            <span className="hide-mobile">{isEditing ? 'View Markdown' : 'Edit'}</span>
           </button>
 
           {/* Save to Cloud */}
@@ -166,7 +166,7 @@ export default function Dashboard() {
             style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
           >
             <Cloud size={13} />
-            {saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}
+            <span className="hide-mobile">{saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}</span>
           </button>
 
           {/* User Auth Profile */}
@@ -175,9 +175,11 @@ export default function Dashboard() {
               <button
                 className="btn-ghost"
                 onClick={() => navigate('/projects')}
-                style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)' }}
+                title="View Saved Projects"
               >
-                {user.displayName || user.email.split('@')[0]}
+                <Folder size={13} />
+                <span className="hide-mobile">{user.displayName || user.email.split('@')[0]}</span>
               </button>
               <button
                 className="btn-ghost"
@@ -195,11 +197,11 @@ export default function Dashboard() {
               onClick={() => setShowAuth(true)}
               style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
             >
-              <LogIn size={14} /> Log in
+              <LogIn size={14} /> <span className="hide-mobile">Log in</span>
             </button>
           )}
 
-          <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
+          <span className="hide-mobile" style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
 
           <button
             className="btn-ghost"
@@ -208,7 +210,7 @@ export default function Dashboard() {
             aria-label="Start over"
           >
             <RotateCcw size={13} />
-            Start over
+            <span className="hide-mobile">Start over</span>
           </button>
         </div>
       </header>
@@ -242,6 +244,42 @@ export default function Dashboard() {
           flexDirection: 'column',
           overflow: 'hidden',
         }}>
+          {/* Mobile Document Selector Tabs */}
+          <div
+            className="mobile-doc-tabs"
+            style={{
+              display: 'none',
+              background: 'rgba(255,255,255,0.01)',
+              borderBottom: '1px solid var(--color-border)',
+              padding: '8px 16px',
+              overflowX: 'auto',
+              whiteSpace: 'nowrap',
+              gap: '6px',
+              flexShrink: 0,
+            }}
+          >
+            {['prd', 'architecture', 'design', 'rules', 'schema'].map((key) => {
+              const isActive = activeDoc === key
+              const label = DOC_META[key]?.label || key.toUpperCase()
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveDoc(key)}
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  style={{
+                    padding: '6px 12px',
+                    fontSize: '0.78rem',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                  }}
+                  type="button"
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+
           {/* Doc header bar */}
           <div style={{
             display: 'flex',
@@ -316,6 +354,7 @@ export default function Dashboard() {
         @media (max-width: 768px) {
           .dashboard-grid { grid-template-columns: 1fr !important; }
           .dashboard-grid > aside:first-child { display: none; }
+          .mobile-doc-tabs { display: flex !important; }
         }
       `}</style>
     </motion.div>

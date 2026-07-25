@@ -44,6 +44,14 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
   }
   if (currentStep >= 5 && architecture.database) {
     preview += `## Database\n**${architecture.database}**\n\n`
+    const entities = pillars.schema?.entities || []
+    if (entities.length > 0) {
+      preview += `### Schema Tables:\n`
+      entities.forEach((entity) => {
+        preview += `- **${entity.name}** (${entity.columns.length} columns)\n`
+      })
+      preview += `\n`
+    }
   }
   if (currentStep >= 6 && rules.language) {
     preview += `## Rules\n**${rules.language}** · ${rules.testing || 'no test runner'} · ${rules.fileNaming || 'default naming'}\n\n`

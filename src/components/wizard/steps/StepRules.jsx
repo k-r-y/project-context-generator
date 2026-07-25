@@ -5,8 +5,11 @@ import ChipSelector from '../ChipSelector'
 import useProjectStore from '@/store/useProjectStore'
 import { staggerContainer, staggerItem } from '@/lib/animationVariants'
 
-const LANGUAGE_OPTIONS = ['JavaScript', 'TypeScript']
-const TESTING_OPTIONS = ['Vitest', 'Jest', 'Playwright', 'Cypress', 'Testing Library', 'None']
+const LANGUAGE_OPTIONS = [
+  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust',
+  'C#', 'Swift', 'Kotlin', 'C++',
+]
+const TESTING_OPTIONS = ['Vitest', 'Jest', 'Playwright', 'Cypress', 'Testing Library', 'JUnit', 'PyTest', 'None']
 
 const FILE_NAMING = ['kebab-case', 'PascalCase', 'camelCase']
 const DB_NAMING = ['snake_case (plural)', 'camelCase', 'PascalCase']
