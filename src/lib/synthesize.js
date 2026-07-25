@@ -482,6 +482,9 @@ export function generateSystemDesign(answers) {
   const vibe = pillars.design.vibe || 'Dark Premium'
   const primaryHex = pillars.design.primaryColor || '#6366f1'
   const font = pillars.design.typography || 'Inter'
+  const uiLibrary = pillars.design.uiLibrary || 'None'
+  const iconSet = pillars.design.iconSet || 'None'
+  const layoutConcept = pillars.design.layoutConcept || 'None'
 
   // Derive a secondary color (30° hue shift)
   const secondaryHex = pillars.design.primaryColor
@@ -498,10 +501,35 @@ export function generateSystemDesign(answers) {
     vibe === 'Bold & Vibrant' ? `strong ${primaryHex} color blocks, heavy typography, and high-contrast layouts to create a confident, energetic experience.` :
     vibe === 'Corporate' ? `clean layouts, professional ${primaryHex} accents, and accessibility-first design to convey reliability and trust to business stakeholders.` :
     vibe === 'Playful' ? `rounded corners, bouncy micro-animations, and bright ${primaryHex} accents to make the experience feel approachable and fun.` :
-    `intentionally raw, stark typography, and minimal decoration to create an unforgettable, opinionated interface.`
+    vibe === 'Retro/Cyberpunk' ? `high-contrast neon scanlines, dark retro terminal layouts, custom glowing borders, and monospace font accents to make the UI look like a futuristic deck.` :
+    `intentionally raw, stark typography, and minimal decoration to create an opinionated interface.`
   }
 
-## 2. Color Palette
+## 2. Component Design Tokens
+- **UI & Frontend Library:** ${uiLibrary} — ${
+    uiLibrary === 'Shadcn/ui' ? 'Radix UI primitives paired with Tailwind CSS classes for custom styling. Accessible, copy-paste components.' :
+    uiLibrary === 'Tailwind CSS' ? 'Utility-first CSS styling directly in markup. Focus on hover/focus utilities and responsive breakpoints.' :
+    uiLibrary === 'Bootstrap' ? 'Traditional container-grid styling. Standard theme variable modifications in SCSS.' :
+    uiLibrary === 'Material UI' ? 'Material Design guidelines with custom theme configuration overrides.' :
+    uiLibrary === 'Chakra UI' ? 'Compostable styling using theme-aware style props.' :
+    'Vanilla CSS variables for styling. Maximum flexibility and zero library dependencies.'
+  }
+- **Iconography Set:** ${iconSet} — ${
+    iconSet === 'Lucide Icons' ? 'Lucide clean SVG icons, imported and styled with uniform parameters: 20x20px sizing, 2px stroke.' :
+    iconSet === 'FontAwesome' ? 'FontAwesome solid/regular icons, consistent weight and size parameters.' :
+    iconSet === 'Heroicons' ? 'Tailwind-designed clean vector outline icons, using outline/solid classes.' :
+    iconSet === 'Radix Icons' ? 'Radix 15x15 minimalist outline glyphs.' :
+    'Standard inline SVG representations or local assets.'
+  }
+- **Layout Concept:** ${layoutConcept} — ${
+    layoutConcept === 'Glassmorphism' ? 'Backdrop-filter blur(12px) overlays with translucent borders (rgba 255,255,255,0.08) and subtle radial glows.' :
+    layoutConcept === 'Bento Grid' ? 'Structured Grid container with varying column/row span cards, 16px/24px gap variables, and uniform padding.' :
+    layoutConcept === 'Flat Minimalist' ? 'Solid neutral backdrops, thin subtle borders, zero shadows, high typographical focus.' :
+    layoutConcept === 'Neumorphic' ? 'Soft convex surface curves with dual offset shadows (one light, one dark) creating a tactile extruded feel.' :
+    'Standard CSS grid and flexbox flow layouts.'
+  }
+
+## 3. Color Palette
 - **Primary:** \`${primaryHex}\` — CTAs, interactive elements, active states, links
 - **Secondary:** \`${secondaryHex}\` — Supporting accents, hover glow, gradient pairs
 - **Background:** \`#060614\` — Root page background
@@ -536,7 +564,7 @@ export function generateSystemDesign(answers) {
 }
 \`\`\`
 
-## 3. Typography
+## 4. Typography
 - **Headings:** ${font}, weights 700/800
 - **Body:** ${font}, weights 400/500
 - **Monospace:** JetBrains Mono, weights 400/500
@@ -553,7 +581,7 @@ export function generateSystemDesign(answers) {
 | Caption | 0.75rem (12px) | 500 | 1.4 |
 | Mono | 0.875rem (14px) | 400 | 1.6 |
 
-## 4. Spacing & Layout
+## 5. Spacing & Layout
 - **Grid System:** 12-column CSS Grid, 24px gutters on desktop, 16px on mobile
 - **Spacing Unit:** Base 4px
 
@@ -576,7 +604,7 @@ export function generateSystemDesign(answers) {
 - **Breakpoints:**
   - sm: 640px | md: 768px | lg: 1024px | xl: 1280px | 2xl: 1536px
 
-## 5. Animations & Interactions
+## 6. Animations & Interactions
 - **Micro-interactions:** All hover/active transitions ≤ 200ms using \`cubic-bezier(0.4, 0, 0.2, 1)\`
 - **Page Transitions:** Fade + slide-up, 350ms, \`cubic-bezier(0.4, 0, 0.2, 1)\`
 - **Spring / Pop:** \`cubic-bezier(0.34, 1.56, 0.64, 1)\` for chip selection, button press, modal entrance
@@ -590,7 +618,7 @@ export function generateSystemDesign(answers) {
   - ❌ Never animate: \`width\`, \`height\`, \`margin\`, \`top\`, \`left\`, \`padding\` (causes layout thrash)
   - All animations must respect \`@media (prefers-reduced-motion: reduce)\`
 
-## 6. Accessibility (a11y)
+## 7. Accessibility (a11y)
 - **Contrast Ratios:** Minimum 4.5:1 for body text; 3:1 for large text (>18px bold) and UI components
 - **Keyboard Navigation:** All interactive elements reachable and operable via Tab, Enter, Space, Escape
 - **Focus Rings:** \`outline: 2px solid ${primaryHex}; outline-offset: 2px;\` — never use \`outline: none\` without a visible replacement

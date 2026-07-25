@@ -215,12 +215,19 @@ export function buildDesignPrompt(answers) {
   const color = pillars.design.primaryColor || '#6366f1'
   const font = pillars.design.typography || 'Inter'
   const vibe = pillars.design.vibe || 'Dark Premium'
+  const uiLibrary = pillars.design.uiLibrary || 'None'
+  const iconSet = pillars.design.iconSet || 'None'
+  const layoutConcept = pillars.design.layoutConcept || 'None'
+
   return `You are a senior design system architect. Generate a Design System document in Markdown using EXACTLY this structure. Include real hex codes, exact pixel values, and specific component rules.
 
 PROJECT NAME: ${meta.name}
 DESIGN VIBE: ${vibe}
 PRIMARY COLOR: ${color}
 TYPOGRAPHY: ${font}
+UI LIBRARY: ${uiLibrary}
+ICON SET: ${iconSet}
+LAYOUT CONCEPT: ${layoutConcept}
 STACK: ${fmtStack(pillars.architecture.stack)}
 
 Generate EXACTLY this structure:
@@ -231,7 +238,12 @@ Generate EXACTLY this structure:
 - **Vibe/Style:** ${vibe}
 - **Core Concept:** [One precise sentence on the feel — e.g., "A premium dark interface using glassmorphism surfaces and indigo accent colors to convey trust and technical sophistication."]
 
-## 2. Color Palette
+## 2. Component Design Tokens
+- **UI Library:** ${uiLibrary} [Explain how components are constructed using this library/utility framework]
+- **Icon Set:** ${iconSet} [Specify naming conventions and alignment rules for this iconography set]
+- **Layout Concept:** ${layoutConcept} [Define grid spacing, row spans, card rounding, or gradients representing this design motif]
+
+## 3. Color Palette
 - **Primary:** \`${color}\` — Main interactive elements, CTAs, active states
 - **Secondary:** \`[computed complementary hex]\` — Supporting accents, hover states
 - **Background:** \`#060614\` — Page base surface

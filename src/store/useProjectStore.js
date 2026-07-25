@@ -24,7 +24,14 @@ const defaultState = {
     design: {
       vibe: '',
       primaryColor: '',
+      secondaryColor: '',
       typography: '',
+      secondaryTypography: '',
+      uiLibraries: [],
+      iconSet: '',
+      layoutConcepts: [],
+      spacing: '',
+      roundedCorners: '',
     },
     rules: {
       language: '',
@@ -154,7 +161,7 @@ const useProjectStore = create(
     {
       name: 'pcg-project-store-v3',
       partialize: (s) => {
-        const { apiKey, isGenerating, generationError, userProjects, firebaseConfig, ...rest } = s
+        const { apiKey, isGenerating, generationError, userProjects, ...rest } = s
         return rest
       },
     }

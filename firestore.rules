@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Match the projects collection
+    match /projects/{projectId} {
+      // Allow read, update, and delete only if the user is authenticated 
+      // and their UID matches the userId stored on the document.
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Allow creation only if the user is authenticated and the userId 
+      // they are setting matches their own UID.
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Database, Plus, Trash, Upload, FileCode, Edit3, ChevronDown, ChevronRight, HelpCircle, Check, AlertCircle } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
@@ -41,6 +41,15 @@ const COLUMN_TYPES = [
   'DATE',
 ]
 
+const DB_MAPPING = {
+  'Supabase': 'Supabase',
+  'Firebase': 'Firebase',
+  'PostgreSQL': 'Postgres',
+  'MySQL': 'PlanetScale',
+  'MongoDB': 'MongoDB',
+  'SQLite': 'SQLite',
+}
+
 export default function StepDatabase({ onNext, onBack }) {
   const { pillars, setArchitecture, setSchema } = useProjectStore()
   const { database, deployment } = pillars.architecture
@@ -54,6 +63,40 @@ export default function StepDatabase({ onNext, onBack }) {
   const [statusMessage, setStatusMessage] = useState(null) // { type: 'success'|'error', text: string }
 
   const fileInputRef = useRef(null)
+
+  const stack = pillars.architecture.stack || []
+  // Filter databases, deployment, and apis selected in the Stack step
+  const selectedDbs = stack.filter((x) => Object.keys(DB_MAPPING).includes(x))
+  const selectedDeploys = stack.filter((x) => DEPLOY_OPTIONS.some(d => d.value === x))
+  const selectedApis = stack.filter((x) => DATA_PATTERNS.includes(x))
+
+  // Automatically select if exactly one is selected in Stack
+  useEffect(() => {
+    const updates = {}
+    if (selectedDbs.length === 1) {
+      const autoDb = DB_MAPPING[selectedDbs[0]]
+      if (database !== autoDb) updates.database = autoDb
+    } else if (selectedDbs.length === 0 && !database) {
+      updates.database = 'None'
+    }
+
+    if (selectedDeploys.length === 1 && deployment !== selectedDeploys[0]) {
+      updates.deployment = selectedDeploys[0]
+    }
+    if (selectedApis.length === 1 && dataPattern !== selectedApis[0]) {
+      updates.dataPattern = selectedApis[0]
+    }
+
+    if (Object.keys(updates).length > 0) {
+      if (updates.dataPattern !== undefined) {
+        setSchema({ dataPattern: updates.dataPattern })
+        delete updates.dataPattern
+      }
+      if (Object.keys(updates).length > 0) {
+        setArchitecture(updates)
+      }
+    }
+  }, [selectedDbs, selectedDeploys, selectedApis, database, deployment, dataPattern, setArchitecture, setSchema])
 
   const canProceed = !!database
 
@@ -208,92 +251,210 @@ export default function StepDatabase({ onNext, onBack }) {
             Where does your data live?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
-            Choose your database, deployment platform, and optionally design/upload your data schema.
+            Choose deployment platform, API data pattern, and optionally design/upload your database schema.
           </p>
         </motion.div>
 
-        {/* Database Options */}
-        <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {DB_OPTIONS.map((opt) => {
-            const isActive = database === opt.value
-            return (
-              <motion.button
-                key={opt.value}
-                onClick={() => setArchitecture({ database: opt.value })}
-                whileHover={{ scale: 1.005 }}
-                whileTap={{ scale: 0.99 }}
-                type="button"
-                aria-pressed={isActive}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '12px 14px', borderRadius: '10px',
-                  border: `1px solid ${isActive ? 'rgba(20,184,166,0.5)' : 'rgba(255,255,255,0.07)'}`,
-                  background: isActive ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
-                  cursor: 'pointer', textAlign: 'left', transition: 'all 150ms ease',
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 600, color: isActive ? '#5eead4' : 'rgba(255,255,255,0.85)', fontSize: '0.9rem' }}>
-                    {opt.value}
-                  </span>
-                  <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: '1px' }}>
-                    {opt.desc}
-                  </span>
-                </div>
-                {isActive && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    style={{ fontSize: '1rem', color: '#14b8a6' }}
-                  >
-                    ✓
-                  </motion.span>
-                )}
-              </motion.button>
-            )
-          })}
+        {/* Database Options - Automatically inferred if selected in stack */}
+        <motion.div variants={staggerItem}>
+          {selectedDbs.length === 1 ? (
+            <div style={{
+              padding: '12px 16px',
+              borderRadius: '10px',
+              border: '1px solid rgba(20,184,166,0.2)',
+              background: 'rgba(20,184,166,0.04)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <div>
+                <span style={{ fontSize: '0.7rem', color: '#14b8a6', display: 'block', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  DATABASE INFERRED FROM TECH STACK
+                </span>
+                <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'white' }}>
+                  {database || DB_MAPPING[selectedDbs[0]]}
+                </span>
+              </div>
+              <span style={{ fontSize: '0.72rem', color: '#14b8a6', background: 'rgba(20,184,166,0.1)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600 }}>
+                Active
+              </span>
+            </div>
+          ) : selectedDbs.length > 1 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
+                SELECT PRIMARY DATABASE (FROM CHOSEN STACK)
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {selectedDbs.map((dbKey) => {
+                  const value = DB_MAPPING[dbKey]
+                  const isActive = database === value
+                  return (
+                    <motion.button
+                      key={value}
+                      onClick={() => setArchitecture({ database: value })}
+                      whileHover={{ scale: 1.005 }}
+                      whileTap={{ scale: 0.99 }}
+                      type="button"
+                      aria-pressed={isActive}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '10px 14px', borderRadius: '8px',
+                        border: `1px solid ${isActive ? 'rgba(20,184,166,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                        background: isActive ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
+                        cursor: 'pointer', color: isActive ? '#5eead4' : 'rgba(255,255,255,0.85)',
+                        fontSize: '0.85rem', fontWeight: 600, transition: 'all 150ms ease',
+                      }}
+                    >
+                      <span>{value}</span>
+                      {isActive && <span>✓</span>}
+                    </motion.button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
+                DATABASE TYPE
+              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {DB_OPTIONS.map((opt) => {
+                  const isActive = database === opt.value
+                  return (
+                    <motion.button
+                      key={opt.value}
+                      onClick={() => setArchitecture({ database: opt.value })}
+                      whileHover={{ scale: 1.005 }}
+                      whileTap={{ scale: 0.99 }}
+                      type="button"
+                      aria-pressed={isActive}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        padding: '10px 12px', borderRadius: '8px',
+                        border: `1px solid ${isActive ? 'rgba(20,184,166,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                        background: isActive ? 'rgba(20,184,166,0.1)' : 'rgba(255,255,255,0.02)',
+                        cursor: 'pointer', textAlign: 'left', transition: 'all 150ms ease',
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontWeight: 600, color: isActive ? '#5eead4' : 'rgba(255,255,255,0.85)', fontSize: '0.85rem' }}>
+                          {opt.value}
+                        </span>
+                        <span style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: '1px' }}>
+                          {opt.desc}
+                        </span>
+                      </div>
+                      {isActive && <span style={{ fontSize: '0.9rem', color: '#14b8a6' }}>✓</span>}
+                    </motion.button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Deployment */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
-            DEPLOYMENT PLATFORM
-          </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {DEPLOY_OPTIONS.map((opt) => (
-              <motion.button
-                key={opt.value}
-                onClick={() => setArchitecture({ deployment: opt.value })}
-                className={`chip ${deployment === opt.value ? 'chip-active' : ''}`}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                aria-pressed={deployment === opt.value}
-              >
-                {opt.value}
-              </motion.button>
-            ))}
-          </div>
+          {selectedDeploys.length === 1 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+                DEPLOYMENT INFERRED FROM TECH STACK
+              </label>
+              <div style={{ color: 'white', fontWeight: 600, fontSize: '0.9rem' }}>{deployment || selectedDeploys[0]}</div>
+            </div>
+          ) : selectedDeploys.length > 1 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+                SELECT PRIMARY DEPLOYMENT (FROM CHOSEN STACK)
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {selectedDeploys.map((val) => (
+                  <motion.button
+                    key={val}
+                    onClick={() => setArchitecture({ deployment: val })}
+                    className={`chip ${deployment === val ? 'chip-active' : ''}`}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    aria-pressed={deployment === val}
+                  >
+                    {val}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+                DEPLOYMENT PLATFORM
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {DEPLOY_OPTIONS.map((opt) => (
+                  <motion.button
+                    key={opt.value}
+                    onClick={() => setArchitecture({ deployment: opt.value })}
+                    className={`chip ${deployment === opt.value ? 'chip-active' : ''}`}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    aria-pressed={deployment === opt.value}
+                  >
+                    {opt.value}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Data Pattern */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
-            API DATA PATTERN
-          </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {DATA_PATTERNS.map((p) => (
-              <motion.button
-                key={p}
-                onClick={() => setSchema({ dataPattern: p })}
-                className={`chip ${dataPattern === p ? 'chip-active' : ''}`}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                aria-pressed={dataPattern === p}
-              >
-                {p}
-              </motion.button>
-            ))}
-          </div>
+          {selectedApis.length === 1 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+                API PATTERN INFERRED FROM TECH STACK
+              </label>
+              <div style={{ color: 'white', fontWeight: 600, fontSize: '0.9rem' }}>{dataPattern || selectedApis[0]}</div>
+            </div>
+          ) : selectedApis.length > 1 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+                SELECT PRIMARY API PATTERN (FROM CHOSEN STACK)
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {selectedApis.map((p) => (
+                  <motion.button
+                    key={p}
+                    onClick={() => setSchema({ dataPattern: p })}
+                    className={`chip ${dataPattern === p ? 'chip-active' : ''}`}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    aria-pressed={dataPattern === p}
+                  >
+                    {p}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.06em' }}>
+                API DATA PATTERN
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {DATA_PATTERNS.map((p) => (
+                  <motion.button
+                    key={p}
+                    onClick={() => setSchema({ dataPattern: p })}
+                    className={`chip ${dataPattern === p ? 'chip-active' : ''}`}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    aria-pressed={dataPattern === p}
+                  >
+                    {p}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Expandable Database Schema Builder */}

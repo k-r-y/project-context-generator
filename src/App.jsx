@@ -26,6 +26,8 @@ function AnimatedRoutes() {
   )
 }
 
+import ToastProvider from '@/components/ui/ToastProvider'
+
 export default function App() {
   const { setUser, firebaseConfig } = useProjectStore()
 
@@ -52,7 +54,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <MeshBackground />
+      <ToastProvider />
       <AnimatedRoutes />
     </BrowserRouter>
   )
 }
+

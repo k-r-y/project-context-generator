@@ -16,8 +16,18 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
   if (currentStep >= 1) {
     preview += `## Product Scope\n`
     if (targetAudience) preview += `- **Target Audience:** ${targetAudience}\n`
-    if (businessGoals) preview += `- **Business Goals:** ${businessGoals}\n`
-    if (successMetrics) preview += `- **Success Metrics:** ${successMetrics}\n`
+    if (businessGoals) {
+      preview += `\n### Business Goals:\n`
+      businessGoals.split('\n').map(g => g.trim()).filter(Boolean).forEach(g => {
+        preview += `- ${g}\n`
+      })
+    }
+    if (successMetrics) {
+      preview += `\n### Success Metrics:\n`
+      successMetrics.split('\n').map(m => m.trim()).filter(Boolean).forEach(m => {
+        preview += `- ${m}\n`
+      })
+    }
     if (mvpFeatures) {
       preview += `\n### MVP Features (In Scope):\n`
       mvpFeatures.split(/[,\n]/).map(f => f.trim()).filter(Boolean).forEach(f => {
@@ -40,7 +50,23 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
     preview += `## Architecture\n**${architecture.rendering}** — ${architecture.designPattern || 'pattern not selected'}\n\n`
   }
   if (currentStep >= 4 && design.vibe) {
-    preview += `## Design\n**${design.vibe}**${design.primaryColor ? ` · \`${design.primaryColor}\`` : ''}\n\n`
+    preview += `## Design\n**${design.vibe}**${design.primaryColor ? ` · \`${design.primaryColor}\`` : ''}${design.secondaryColor ? ` · \`${design.secondaryColor}\`` : ''}\n\n`
+    
+    if (design.typography || design.secondaryTypography) {
+      preview += `**Typography:** ${design.typography || 'Default'}${design.secondaryTypography ? ` / ${design.secondaryTypography}` : ''}\n\n`
+    }
+    
+    if (design.uiLibraries?.length) {
+      preview += `**UI Libraries:** ${design.uiLibraries.join(', ')}\n\n`
+    }
+    
+    if (design.layoutConcepts?.length) {
+      preview += `**Layout:** ${design.layoutConcepts.join(', ')}\n\n`
+    }
+    
+    if (design.spacing || design.roundedCorners) {
+      preview += `**Spacing:** ${design.spacing || 'Default'} · **Corners:** ${design.roundedCorners || 'Default'}\n\n`
+    }
   }
   if (currentStep >= 5 && architecture.database) {
     preview += `## Database\n**${architecture.database}**\n\n`

@@ -18,12 +18,13 @@ export default function AuthModal({ onClose }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  const { auth, initialized } = getFirebaseInstance()
+
   const handleGoogleSignIn = async () => {
     setError('')
     setLoading(true)
-    const { auth, initialized } = getFirebaseInstance()
     if (!initialized) {
-      setError('Firebase is not initialized properly.')
+      setError('Firebase is not initialized properly. Click settings to configure.')
       setLoading(false)
       return
     }
@@ -50,9 +51,8 @@ export default function AuthModal({ onClose }) {
     setError('')
     setLoading(true)
 
-    const { auth, initialized } = getFirebaseInstance()
     if (!initialized) {
-      setError('Firebase is not initialized properly.')
+      setError('Firebase is not initialized properly. Click settings to configure.')
       setLoading(false)
       return
     }
@@ -85,6 +85,16 @@ export default function AuthModal({ onClose }) {
     }
   }
 
+  const handleGuestSignIn = () => {
+    setUser({
+      uid: 'guest-local',
+      email: 'guest@local.dev',
+      displayName: 'Guest User',
+      isGuest: true,
+    })
+    onClose()
+  }
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
@@ -96,6 +106,8 @@ export default function AuthModal({ onClose }) {
           <h2 className="heading-md">{isSignUp ? 'Create account' : 'Sign in'}</h2>
           <button className="btn-ghost" onClick={onClose} style={{ padding: '4px' }}>✕</button>
         </div>
+
+        {/* Removed !initialized warning block */}
 
         {error && (
           <div style={{
@@ -113,7 +125,7 @@ export default function AuthModal({ onClose }) {
           type="button"
           className="btn-secondary"
           onClick={handleGoogleSignIn}
-          disabled={loading}
+          disabled={loading || !initialized}
           style={{
             width: '100%',
             padding: '11px',
@@ -124,6 +136,8 @@ export default function AuthModal({ onClose }) {
             marginBottom: '16px',
             fontSize: '0.85rem',
             fontWeight: 600,
+            opacity: initialized ? 1 : 0.4,
+            cursor: initialized ? 'pointer' : 'not-allowed',
           }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24">
@@ -164,6 +178,7 @@ export default function AuthModal({ onClose }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={!initialized}
               />
             </div>
           )}
@@ -177,6 +192,7 @@ export default function AuthModal({ onClose }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={!initialized}
             />
           </div>
 
@@ -189,10 +205,16 @@ export default function AuthModal({ onClose }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={!initialized}
             />
           </div>
 
-          <button className="btn-primary" type="submit" disabled={loading} style={{ marginTop: '8px', padding: '11px' }}>
+          <button
+            className="btn-primary"
+            type="submit"
+            disabled={loading || !initialized}
+            style={{ marginTop: '8px', padding: '11px', opacity: initialized ? 1 : 0.4 }}
+          >
             {loading ? 'Processing…' : isSignUp ? 'Sign up' : 'Sign in'}
           </button>
         </form>
@@ -203,10 +225,34 @@ export default function AuthModal({ onClose }) {
             className="btn-ghost"
             style={{ padding: '0 4px', textDecoration: 'underline', color: 'var(--color-accent-text)' }}
             onClick={() => setIsSignUp(!isSignUp)}
+            disabled={!initialized}
           >
             {isSignUp ? 'Sign in' : 'Sign up'}
           </button>
         </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0', color: 'var(--color-text-muted)' }}>
+          <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+          <span style={{ padding: '0 8px', fontSize: '0.72rem', textTransform: 'uppercase' }}>guest</span>
+          <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+        </div>
+
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={handleGuestSignIn}
+          style={{
+            width: '100%',
+            padding: '10px',
+            border: '1px dashed rgba(255,255,255,0.15)',
+            fontSize: '0.82rem',
+            fontWeight: 500,
+          }}
+        >
+          Continue as Guest (Local Mode)
+        </button>
+
+        {/* Removed Configure Custom Firebase Project link */}
       </div>
     </div>
   )

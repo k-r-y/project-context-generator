@@ -4,6 +4,7 @@ import { FolderOpen, ArrowLeft, Trash2, Calendar, FileText } from 'lucide-react'
 import { getFirebaseInstance } from '@/lib/firebase'
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import useProjectStore from '@/store/useProjectStore'
+import { toast } from '@/store/useToastStore'
 
 export default function ProjectsDashboard() {
   const navigate = useNavigate()
@@ -60,7 +61,7 @@ export default function ProjectsDashboard() {
       setUserProjects(userProjects.filter(p => p.id !== id))
     } catch (err) {
       console.error(err)
-      alert('Failed to delete project.')
+      toast.error('Failed to delete project.')
     }
   }
 
@@ -114,16 +115,27 @@ export default function ProjectsDashboard() {
         )}
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px' }}>
-            <div style={{
-              width: '24px', height: '24px',
-              border: '2px solid var(--color-border-hover)',
-              borderTopColor: 'var(--color-accent)',
-              borderRadius: '50%',
-              animation: 'spin 0.9s linear infinite',
-              margin: '0 auto 16px',
-            }} />
-            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Loading saved projects…</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="surface-interactive animate-pulse" style={{
+                padding: '16px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                height: '74px',
+                border: '1px solid var(--color-border)'
+              }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)' }} />
+                  <div>
+                    <div style={{ width: '150px', height: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '8px' }} />
+                    <div style={{ width: '100px', height: '12px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
+                  </div>
+                </div>
+                <div style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }} />
+              </div>
+            ))}
           </div>
         ) : userProjects.length === 0 ? (
           <div style={{

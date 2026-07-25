@@ -275,7 +275,15 @@ export default function LandingPage() {
       </motion.p>
 
       {/* Modals */}
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      {showAuth && (
+        <AuthModal
+          onClose={() => setShowAuth(false)}
+          onOpenConfig={() => {
+            setShowAuth(false)
+            setShowConfig(true)
+          }}
+        />
+      )}
       {showConfig && <FirebaseConfigModal onClose={() => setShowConfig(false)} />}
     </div>
   )

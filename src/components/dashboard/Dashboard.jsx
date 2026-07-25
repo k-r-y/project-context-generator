@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { toast } from '@/store/useToastStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { RotateCcw, Cloud, LogIn, LogOut, Settings, Edit, Eye, Save, Folder, User } from 'lucide-react'
@@ -8,7 +9,6 @@ import MetricsChecklist from './MetricsChecklist'
 import ActionBar from './ActionBar'
 import AIToggle from './AIToggle'
 import AuthModal from '../auth/AuthModal'
-import FirebaseConfigModal from '../auth/FirebaseConfigModal'
 import useProjectStore from '@/store/useProjectStore'
 import { getFirebaseInstance } from '@/lib/firebase'
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore'
@@ -25,7 +25,6 @@ export default function Dashboard() {
   const [activeDoc, setActiveDoc] = useState('prd')
   const [isEditing, setIsEditing] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
-  const [showConfig, setShowConfig] = useState(false)
   const [saveLoading, setSaveLoading] = useState(false)
   const [currentDocId, setCurrentDocId] = useState(null)
 
@@ -55,7 +54,8 @@ export default function Dashboard() {
   }
 
   const handleSaveToCloud = async () => {
-    if (!user) {
+    if (!user || user.uid === 'guest-local') {
+      toast.error('Cloud saving is not available in Guest Mode. Please sign in or configure your Firebase settings!')
       setShowAuth(true)
       return
     }
@@ -63,7 +63,7 @@ export default function Dashboard() {
     setSaveLoading(true)
     const { db, initialized } = getFirebaseInstance()
     if (!initialized) {
-      alert('Please configure your Firebase settings first!')
+      toast.error('Please configure your Firebase settings first!')
       setSaveLoading(false)
       return
     }
@@ -82,17 +82,17 @@ export default function Dashboard() {
         await setDoc(doc(db, 'projects', currentDocId), payload, { merge: true })
         // Update local store state
         setUserProjects(userProjects.map(p => p.id === currentDocId ? { ...p, ...payload } : p))
-        alert('Project updated successfully on Cloud!')
+        toast.success('Project updated successfully on Cloud!')
       } else {
         // Create new record
         const docRef = await addDoc(collection(db, 'projects'), payload)
         setCurrentDocId(docRef.id)
         setUserProjects([{ id: docRef.id, ...payload }, ...userProjects])
-        alert('Project saved successfully to Cloud!')
+        toast.success('Project saved successfully to Cloud!')
       }
     } catch (err) {
       console.error(err)
-      alert('Failed to save to cloud: ' + err.message)
+      toast.error('Failed to save to cloud: ' + err.message)
     } finally {
       setSaveLoading(false)
     }
@@ -342,9 +342,9 @@ export default function Dashboard() {
         </aside>
       </div>
 
-      {/* Modals */}
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-      {showConfig && <FirebaseConfigModal onClose={() => setShowConfig(false)} />}
+      {showAuth && (
+        <AuthModal onClose={() => setShowAuth(false)} />
+      )}
 
       <style>{`
         @media (max-width: 1100px) {

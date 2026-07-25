@@ -15,8 +15,10 @@ export default function ChipSelector({
   onToggle,
   multiSelect = true,
   icons = {},
+  disabledOptions = [],
 }) {
   const handleClick = (value) => {
+    if (disabledOptions.includes(value)) return
     if (!multiSelect && selected.includes(value)) return
     onToggle(value)
   }
@@ -25,16 +27,24 @@ export default function ChipSelector({
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }} role="group">
       {options.map((option) => {
         const isActive = selected.includes(option)
+        const isDisabled = disabledOptions.includes(option)
         return (
           <motion.button
             key={option}
             className={`chip ${isActive ? 'chip-active' : ''}`}
             onClick={() => handleClick(option)}
-            whileTap={{ scale: 0.96 }}
+            whileTap={isDisabled ? {} : { scale: 0.96 }}
             transition={{ duration: 0.1 }}
             aria-pressed={isActive}
+            disabled={isDisabled}
             type="button"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              opacity: isDisabled ? 0.35 : 1,
+              cursor: isDisabled ? 'not-allowed' : 'pointer',
+            }}
           >
             {icons[option] && (
               <span aria-hidden="true" style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>

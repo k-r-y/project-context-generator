@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ShieldCheck } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
@@ -30,6 +31,21 @@ const ANTI_PATTERNS = [
 export default function StepRules({ onNext, onBack }) {
   const { pillars, setRules, toggleAntiPattern } = useProjectStore()
   const { language, testing, antiPatterns, extraConstraints, fileNaming, dbNaming, errorHandling } = pillars.rules
+  const stack = pillars.architecture.stack || []
+
+  // Filter languages chosen in the stack step
+  const selectedLangs = stack.filter((x) => LANGUAGE_OPTIONS.includes(x))
+
+  // Auto-sync language selection if exactly one language is selected in the Stack
+  useEffect(() => {
+    if (selectedLangs.length === 1) {
+      if (language !== selectedLangs[0]) {
+        setRules({ language: selectedLangs[0] })
+      }
+    } else if (selectedLangs.length === 0 && !language) {
+      setRules({ language: 'TypeScript' })
+    }
+  }, [selectedLangs, language, setRules])
 
   return (
     <QuestionCard>
@@ -57,21 +73,48 @@ export default function StepRules({ onNext, onBack }) {
             Set your constraints
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
-            These become enforceable directives in your RULES.md — SOLID, KISS, DRY baked in by default.
+            These rules shape structural patterns in your RULES.md—SOLID, KISS, DRY baked in by default.
           </p>
         </motion.div>
 
-        {/* Language */}
+        {/* Language Selection - Automatically inferred or restricted */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}>
-            LANGUAGE
-          </label>
-          <ChipSelector
-            options={LANGUAGE_OPTIONS}
-            selected={language ? [language] : []}
-            onToggle={(val) => setRules({ language: val })}
-            multiSelect={false}
-          />
+          {selectedLangs.length === 1 ? (
+            <div style={{
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: '1px solid rgba(245,158,11,0.2)',
+              background: 'rgba(245,158,11,0.04)',
+              fontSize: '0.82rem',
+              color: 'rgba(255,255,255,0.7)',
+            }}>
+              Coding language inferred: <strong style={{ color: '#fbbf24' }}>{language || selectedLangs[0]}</strong> (from tech stack)
+            </div>
+          ) : selectedLangs.length > 1 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
+                WHICH LANGUAGE SHOULD THE RULES FOCUS ON?
+              </label>
+              <ChipSelector
+                options={selectedLangs}
+                selected={language ? [language] : []}
+                onToggle={(val) => setRules({ language: val })}
+                multiSelect={false}
+              />
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
+                PROGRAMMING LANGUAGE
+              </label>
+              <ChipSelector
+                options={LANGUAGE_OPTIONS}
+                selected={language ? [language] : []}
+                onToggle={(val) => setRules({ language: val })}
+                multiSelect={false}
+              />
+            </div>
+          )}
         </motion.div>
 
         {/* Testing */}

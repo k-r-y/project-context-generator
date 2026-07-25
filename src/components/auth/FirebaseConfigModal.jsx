@@ -13,19 +13,29 @@ export default function FirebaseConfigModal({ onClose }) {
     if (!configText.trim()) {
       setFirebaseConfig(null)
       onClose()
+      window.location.reload()
       return
     }
 
     try {
-      // Allow pasting direct JSON object from Firebase Console
-      const parsed = JSON.parse(configText)
-      if (!parsed.apiKey || !parsed.projectId) {
+      // Allow pasting direct JSON object or JS object from Firebase Console
+      let parsed;
+      try {
+        parsed = JSON.parse(configText);
+      } catch (e) {
+        // Fallback for JS object syntax (keys without quotes, trailing semicolons)
+        const cleanText = configText.replace(/const\\s+firebaseConfig\\s*=\\s*/g, '').replace(/;/g, '').trim();
+        parsed = new Function('return ' + cleanText)();
+      }
+
+      if (!parsed || !parsed.apiKey || !parsed.projectId) {
         throw new Error('Object must contain at least apiKey and projectId.')
       }
       setFirebaseConfig(parsed)
       onClose()
+      window.location.reload()
     } catch (err) {
-      setError('Invalid JSON config object. Make sure you copy/paste the SDK config object from Firebase console.')
+      setError('Invalid config object. Make sure you copy/paste the SDK config object from Firebase console.')
     }
   }
 

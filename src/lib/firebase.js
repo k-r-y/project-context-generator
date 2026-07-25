@@ -1,11 +1,10 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
-import useProjectStore from '@/store/useProjectStore'
 
-// Default fallback configuration baked directly in to run on any device out-of-the-box
-const DEFAULT_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyDCNrdWvIQD52nTYmoD4FINVCUXvqWGzgE",
+// Hardcoded configuration baked directly in
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDCNrDWviQD52nTYmoD4FINVCUXVqWGzgE",
   authDomain: "project-context-generator.firebaseapp.com",
   projectId: "project-context-generator",
   storageBucket: "project-context-generator.firebasestorage.app",
@@ -14,14 +13,8 @@ const DEFAULT_FIREBASE_CONFIG = {
 }
 
 export function getFirebaseInstance() {
-  const config = DEFAULT_FIREBASE_CONFIG
-
-  if (!config) {
-    return { auth: null, db: null, initialized: false }
-  }
-
   try {
-    const app = getApps().length === 0 ? initializeApp(config) : getApp()
+    const app = getApps().length === 0 ? initializeApp(FIREBASE_CONFIG) : getApp()
     const auth = getAuth(app)
     const db = getFirestore(app)
     return { auth, db, initialized: true }
@@ -30,3 +23,4 @@ export function getFirebaseInstance() {
     return { auth: null, db: null, initialized: false }
   }
 }
+
