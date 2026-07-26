@@ -262,7 +262,7 @@ export default function Dashboard() {
           <DocumentNav activeDoc={activeDoc} onSelect={setActiveDoc} />
 
           {/* Tablet-only panel for AI generation & checklist when Col 3 is hidden */}
-          <div className="tablet-only-panel" style={{ marginTop: '16px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+          <div className="tablet-sidebar-extras" style={{ marginTop: '16px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
             <AIToggle activeDoc={activeDoc} />
             <div style={{ marginTop: '12px' }}>
               <MetricsChecklist />
@@ -276,6 +276,9 @@ export default function Dashboard() {
           style={{
             display: 'flex',
             flexDirection: 'column',
+            flex: 1,
+            height: '100%',
+            minHeight: 0,
             overflow: 'hidden',
           }}
         >
@@ -364,6 +367,7 @@ export default function Dashboard() {
         {/* Col 3 — Right panel */}
         <motion.aside
           variants={bentoGridCell}
+          className="desktop-sidebar-extras"
           style={{
             borderLeft: '1px solid var(--color-border)',
             display: 'flex',
@@ -385,10 +389,13 @@ export default function Dashboard() {
       )}
 
       <style>{`
+        .tablet-sidebar-extras { display: none !important; }
+        .desktop-sidebar-extras { display: flex !important; }
+
         @media (max-width: 1100px) {
           .dashboard-grid { grid-template-columns: 210px 1fr !important; }
-          .dashboard-grid > aside:last-child { display: none; }
-          .tablet-only-panel { display: flex !important; flex-direction: column; gap: 12px; }
+          .desktop-sidebar-extras { display: none !important; }
+          .tablet-sidebar-extras { display: flex !important; flex-direction: column; gap: 12px; }
         }
         @media (max-width: 768px) {
           .dashboard-grid { grid-template-columns: 1fr !important; }

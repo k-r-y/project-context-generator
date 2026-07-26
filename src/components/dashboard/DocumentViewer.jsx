@@ -7,11 +7,12 @@ export default function DocumentViewer({ content, docKey, isEditing, onEditChang
     <div
       style={{
         flex: 1,
+        height: '100%',
         minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-        position: 'relative',
+        overflowY: 'auto',
+        padding: '28px 32px 64px',
       }}
     >
       <AnimatePresence mode="wait">
@@ -22,10 +23,7 @@ export default function DocumentViewer({ content, docKey, isEditing, onEditChang
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
           style={{
-            position: 'absolute',
-            inset: 0,
-            overflowY: 'auto',
-            padding: '24px 28px 48px',
+            minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
           }}
@@ -50,7 +48,7 @@ export default function DocumentViewer({ content, docKey, isEditing, onEditChang
               placeholder="Edit your markdown documentation context here..."
             />
           ) : content ? (
-            <div className="markdown-render">
+            <div className="markdown-render" style={{ flex: 1 }}>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {content}
               </ReactMarkdown>
@@ -62,7 +60,8 @@ export default function DocumentViewer({ content, docKey, isEditing, onEditChang
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: '100%',
+                flex: 1,
+                minHeight: '300px',
                 color: 'rgba(255,255,255,0.2)',
                 gap: '12px',
               }}
