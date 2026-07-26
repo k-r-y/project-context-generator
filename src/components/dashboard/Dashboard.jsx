@@ -52,6 +52,9 @@ export default function Dashboard() {
   }
 
   const handleLogout = async () => {
+    if (!window.confirm('Are you sure you want to log out?')) {
+      return
+    }
     try {
       const { auth } = getFirebaseInstance()
       if (auth) {
@@ -197,11 +200,11 @@ export default function Dashboard() {
               <InteractiveButton
                 className="btn-ghost"
                 onClick={handleLogout}
-                style={{ padding: '6px' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
                 aria-label="Logout"
                 title="Logout"
               >
-                <LogOut size={15} />
+                <LogOut size={14} /> Log out
               </InteractiveButton>
             </div>
           ) : (

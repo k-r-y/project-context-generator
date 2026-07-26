@@ -22,6 +22,9 @@ export default function ProjectsDashboard() {
   const [error, setError] = useState('')
 
   const handleLogout = async () => {
+    if (!window.confirm('Are you sure you want to log out?')) {
+      return
+    }
     try {
       const { auth } = getFirebaseInstance()
       if (auth) {
