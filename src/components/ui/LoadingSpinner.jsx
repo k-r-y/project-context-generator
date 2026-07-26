@@ -18,7 +18,7 @@ export default function LoadingSpinner({ message = 'Loading...' }) {
           width: '36px',
           height: '36px',
           border: '3px solid var(--color-border)',
-          borderTopColor: '#60a5fa',
+          borderTopColor: 'var(--color-accent)',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }}

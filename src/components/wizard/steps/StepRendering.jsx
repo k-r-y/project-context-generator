@@ -151,13 +151,13 @@ export default function StepRendering({ onNext, onBack }) {
                   style={{
                     display: 'flex', alignItems: 'flex-start', gap: '12px',
                     padding: '12px 14px', borderRadius: '10px',
-                    border: `1px solid ${isActive ? 'rgba(99,102,241,0.6)' : 'rgba(255,255,255,0.08)'}`,
-                    background: isActive ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isActive ? 'rgba(21,128,61,0.6)' : 'rgba(255,255,255,0.08)'}`,
+                    background: isActive ? 'rgba(21,128,61,0.12)' : 'rgba(255,255,255,0.03)',
                     cursor: 'pointer', textAlign: 'left', transition: 'all 150ms ease',
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, color: isActive ? '#a5b8fc' : 'rgba(255,255,255,0.9)', fontSize: '0.875rem', marginBottom: '2px' }}>
+                    <div style={{ fontWeight: 600, color: isActive ? '#4ade80' : 'rgba(255,255,255,0.9)', fontSize: '0.875rem', marginBottom: '2px' }}>
                       {opt.label}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>

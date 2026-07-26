@@ -14,3 +14,15 @@
 ## 3. Animation & Interaction (Framer Motion)
 * **Micro-interactions:** Buttons and selectable chips should have instant feedback (scale down on click, subtle glow on hover).
 * **Transitions:** The questionnaire should not scroll. Each question card should slide in smoothly from the right, replacing the previous question, orchestrated by Framer Motion's `AnimatePresence`.
+
+
+## 4. Colors 
+
+* **Light Color:** `#faf9f5` Light backgrounds and text on dark
+* **Dark Color:** `#141413` Primary text and dark backgrounds
+* **Mid Gray: :** `#b0aea5` Secondary elements
+* **Light Gray:** `#e8e6dc` Subtle backgrounds
+
+* **Accent Color:** `#15803d` for accent, emphasizes, etc.
+
+* **Theme:** Light and Dark mode

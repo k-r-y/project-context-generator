@@ -811,7 +811,7 @@ export default function StepDatabase({ onNext, onBack }) {
                               {t.columns.map((c, cidx) => (
                                 <div key={cidx} style={{ display: 'flex', gap: '6px', color: 'rgba(255,255,255,0.5)' }}>
                                   <span style={{ color: 'rgba(255,255,255,0.85)' }}>{c.name}</span>
-                                  <span style={{ color: '#818cf8', fontSize: '0.7rem' }}>{c.type}</span>
+                                  <span style={{ color: '#4ade80', fontSize: '0.7rem' }}>{c.type}</span>
                                   {c.constraints && <span style={{ color: '#f59e0b', fontSize: '0.7rem' }}>[{c.constraints}]</span>}
                                   {c.description && <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.7rem' }}>// {c.description}</span>}
                                 </div>

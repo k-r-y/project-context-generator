@@ -112,14 +112,14 @@ export default function StepDesignVibe({ onNext, onBack }) {
                   style={{
                     padding: '10px 12px',
                     borderRadius: '10px',
-                    border: `1px solid ${isActive ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.07)'}`,
-                    background: isActive ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${isActive ? 'rgba(21,128,61,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                    background: isActive ? 'rgba(21,128,61,0.12)' : 'rgba(255,255,255,0.02)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 150ms ease',
                   }}
                 >
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: isActive ? '#a5b8fc' : 'rgba(255,255,255,0.85)', marginBottom: '2px' }}>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: isActive ? '#4ade80' : 'rgba(255,255,255,0.85)', marginBottom: '2px' }}>
                     {v.value}
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.35 }}>
@@ -162,7 +162,7 @@ export default function StepDesignVibe({ onNext, onBack }) {
                     boxShadow: isSelected
                       ? item.hex === '#ffffff'
                         ? '0 0 0 2px rgba(255,255,255,0.8), 0 0 10px rgba(255,255,255,0.4)'
-                        : '0 0 0 2px rgba(99,102,241,0.8), 0 0 10px rgba(99,102,241,0.4)'
+                        : '0 0 0 2px rgba(21,128,61,0.8), 0 0 10px rgba(21,128,61,0.4)'
                       : 'none',
                     transition: 'all 150ms ease',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',

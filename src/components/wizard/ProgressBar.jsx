@@ -19,8 +19,8 @@ export default function ProgressBar({ current, total }) {
         transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         style={{
           height: '100%',
-          background: 'linear-gradient(90deg, var(--color-accent) 0%, #818cf8 100%)',
-          boxShadow: '0 0 10px rgba(99,102,241,0.6)',
+          background: 'linear-gradient(90deg, #15803d 0%, #22c55e 100%)',
+          boxShadow: '0 0 10px rgba(21,128,61,0.6)',
           position: 'relative',
         }}
       />

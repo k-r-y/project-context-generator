@@ -7,12 +7,12 @@ export default function MeshBackground() {
         position: 'fixed',
         inset: 0,
         zIndex: -1,
-        background: '#0a0a0a',
+        background: '#141413',
         pointerEvents: 'none',
         overflow: 'hidden',
       }}
     >
-      {/* Single very subtle top-center glow — gives depth without noise */}
+      {/* Single subtle top-center green accent glow matching DESIGN.md */}
       <div
         style={{
           position: 'absolute',
@@ -21,7 +21,7 @@ export default function MeshBackground() {
           transform: 'translateX(-50%)',
           width: '600px',
           height: '400px',
-          background: 'radial-gradient(ellipse at center, rgba(99,102,241,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(21,128,61,0.09) 0%, transparent 70%)',
           borderRadius: '50%',
           filter: 'blur(40px)',
         }}

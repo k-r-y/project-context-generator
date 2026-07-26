@@ -34,7 +34,7 @@ export default function ChipSelector({
             key={option}
             className={`chip transform-gpu ${isActive ? 'chip-active' : ''}`}
             onClick={() => handleClick(option)}
-            whileHover={isDisabled ? {} : { scale: 1.03, boxShadow: isActive ? '0 0 16px rgba(99,102,241,0.3)' : '0 0 10px rgba(255,255,255,0.06)' }}
+            whileHover={isDisabled ? {} : { scale: 1.03, boxShadow: isActive ? '0 0 16px rgba(21,128,61,0.35)' : '0 0 10px rgba(255,255,255,0.06)' }}
             whileTap={isDisabled ? {} : { scale: 0.94 }}
             transition={springTransition}
             aria-pressed={isActive}

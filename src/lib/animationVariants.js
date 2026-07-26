@@ -77,7 +77,7 @@ export const chipVariants = {
   tap: { scale: 0.94, transition: { duration: 0.08 } },
   active: {
     scale: 1,
-    boxShadow: '0 0 0 1px rgba(99,102,241,0.5), 0 0 16px rgba(99,102,241,0.25)',
+    boxShadow: '0 0 0 1px rgba(21,128,61,0.5), 0 0 16px rgba(21,128,61,0.25)',
     transition: { duration: 0.2 },
   },
 }
@@ -94,9 +94,9 @@ export const checkmarkVariants = {
 export const glowPulse = {
   animate: {
     boxShadow: [
-      '0 0 16px rgba(99,102,241,0.2)',
-      '0 0 32px rgba(99,102,241,0.5)',
-      '0 0 16px rgba(99,102,241,0.2)',
+      '0 0 16px rgba(21,128,61,0.2)',
+      '0 0 32px rgba(21,128,61,0.5)',
+      '0 0 16px rgba(21,128,61,0.2)',
     ],
     transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
   },

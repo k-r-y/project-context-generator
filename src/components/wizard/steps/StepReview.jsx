@@ -80,14 +80,14 @@ export default function StepReview({ onSubmit, onBack }) {
               whileTap={{ scale: 0.98 }}
               style={{
                 padding: '12px 14px', borderRadius: '10px',
-                border: `1px solid ${!isAI ? 'rgba(99,102,241,0.5)' : 'rgba(255,255,255,0.07)'}`,
-                background: !isAI ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${!isAI ? 'rgba(21,128,61,0.5)' : 'rgba(255,255,255,0.07)'}`,
+                background: !isAI ? 'rgba(21,128,61,0.12)' : 'rgba(255,255,255,0.02)',
                 cursor: 'pointer', textAlign: 'left', transition: 'all 150ms ease',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <Zap size={15} color={!isAI ? '#818cf8' : 'rgba(255,255,255,0.4)'} />
-                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: !isAI ? '#818cf8' : 'rgba(255,255,255,0.7)' }}>
+                <Zap size={15} color={!isAI ? '#4ade80' : 'rgba(255,255,255,0.4)'} />
+                <span style={{ fontWeight: 600, fontSize: '0.875rem', color: !isAI ? '#4ade80' : 'rgba(255,255,255,0.7)' }}>
                   Static Engine
                 </span>
                 <span style={{ fontSize: '0.7rem', color: '#22c55e', background: 'rgba(34,197,94,0.1)', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>Free</span>
