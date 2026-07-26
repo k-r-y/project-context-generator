@@ -374,21 +374,31 @@ export default function LandingPage() {
         </motion.div>
       </main>
 
-      {/* Bottom note */}
-      <footer role="contentinfo">
+      {/* Bottom note & Copyright */}
+      <footer role="contentinfo" style={{ width: "100%", textAlign: "center", marginTop: "40px" }}>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.8, duration: 0.6 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
           style={{
-            position: "fixed",
-            bottom: "20px",
-            fontSize: "0.72rem",
+            fontSize: "0.75rem",
             color: "var(--color-text-muted)",
             letterSpacing: "0.01em",
+            marginBottom: "4px",
           }}
         >
           Dynamic cloud sync · Runs in browser · localStorage persistence
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4, duration: 0.6 }}
+          style={{
+            fontSize: "0.72rem",
+            color: "rgba(255, 255, 255, 0.35)",
+          }}
+        >
+          &copy; {new Date().getFullYear()} <b>k-r-y</b> Project Context Generator. All rights reserved.
         </motion.p>
       </footer>
 

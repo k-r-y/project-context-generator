@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Plus } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
 import ChipSelector from '../ChipSelector'
 import useProjectStore from '@/store/useProjectStore'
@@ -30,8 +30,24 @@ const ANTI_PATTERNS = [
 
 export default function StepRules({ onNext, onBack }) {
   const { pillars, setRules, toggleAntiPattern } = useProjectStore()
-  const { language, testing, antiPatterns, extraConstraints, fileNaming, dbNaming, errorHandling } = pillars.rules
+  const { language, testing, antiPatterns = [], extraConstraints, fileNaming, dbNaming, errorHandling } = pillars.rules
   const stack = pillars.architecture.stack || []
+
+  // Local state for PRD-style custom item addition forms
+  const [showCustomTesting, setShowCustomTesting] = useState(false)
+  const [customTestingInput, setCustomTestingInput] = useState('')
+
+  const [showCustomFileNaming, setShowCustomFileNaming] = useState(false)
+  const [customFileNamingInput, setCustomFileNamingInput] = useState('')
+
+  const [showCustomDbNaming, setShowCustomDbNaming] = useState(false)
+  const [customDbNamingInput, setCustomDbNamingInput] = useState('')
+
+  const [showCustomErrorHandling, setShowCustomErrorHandling] = useState(false)
+  const [customErrorHandlingInput, setCustomErrorHandlingInput] = useState('')
+
+  const [showCustomAntiPattern, setShowCustomAntiPattern] = useState(false)
+  const [customAntiPatternInput, setCustomAntiPatternInput] = useState('')
 
   // Filter languages chosen in the stack step
   const selectedLangs = stack.filter((x) => LANGUAGE_OPTIONS.includes(x))
@@ -77,7 +93,7 @@ export default function StepRules({ onNext, onBack }) {
           </p>
         </motion.div>
 
-        {/* Language Selection - Automatically inferred or restricted */}
+        {/* Language Selection */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {selectedLangs.length === 1 ? (
             <div style={{
@@ -122,12 +138,68 @@ export default function StepRules({ onNext, onBack }) {
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}>
             TESTING FRAMEWORK
           </label>
-          <ChipSelector
-            options={TESTING_OPTIONS}
-            selected={testing ? [testing] : []}
-            onToggle={(val) => setRules({ testing: val })}
-            multiSelect={false}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {TESTING_OPTIONS.map((opt) => {
+              const isActive = testing === opt
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => setRules({ testing: opt })}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+            {testing && !TESTING_OPTIONS.includes(testing) && (
+              <button
+                type="button"
+                className="chip chip-active"
+                onClick={() => setRules({ testing: '' })}
+              >
+                {testing} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomTesting ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomTesting(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other testing framework...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customTestingInput.trim()
+                  if (val) {
+                    setRules({ testing: val })
+                    setCustomTestingInput('')
+                    setShowCustomTesting(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. Mocha, RSpec, Karma…"
+                  value={customTestingInput}
+                  onChange={(e) => setCustomTestingInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomTesting(false); setCustomTestingInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Naming — Files */}
@@ -135,12 +207,68 @@ export default function StepRules({ onNext, onBack }) {
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}>
             FILE NAMING CONVENTION
           </label>
-          <ChipSelector
-            options={FILE_NAMING}
-            selected={fileNaming ? [fileNaming] : []}
-            onToggle={(val) => setRules({ fileNaming: val })}
-            multiSelect={false}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {FILE_NAMING.map((opt) => {
+              const isActive = fileNaming === opt
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => setRules({ fileNaming: opt })}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+            {fileNaming && !FILE_NAMING.includes(fileNaming) && (
+              <button
+                type="button"
+                className="chip chip-active"
+                onClick={() => setRules({ fileNaming: '' })}
+              >
+                {fileNaming} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomFileNaming ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomFileNaming(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other file naming convention...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customFileNamingInput.trim()
+                  if (val) {
+                    setRules({ fileNaming: val })
+                    setCustomFileNamingInput('')
+                    setShowCustomFileNaming(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. snake_case, UPPER_CASE…"
+                  value={customFileNamingInput}
+                  onChange={(e) => setCustomFileNamingInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomFileNaming(false); setCustomFileNamingInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* DB table naming */}
@@ -148,12 +276,68 @@ export default function StepRules({ onNext, onBack }) {
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}>
             DATABASE TABLE NAMING
           </label>
-          <ChipSelector
-            options={DB_NAMING}
-            selected={dbNaming ? [dbNaming] : []}
-            onToggle={(val) => setRules({ dbNaming: val })}
-            multiSelect={false}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {DB_NAMING.map((opt) => {
+              const isActive = dbNaming === opt
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => setRules({ dbNaming: opt })}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+            {dbNaming && !DB_NAMING.includes(dbNaming) && (
+              <button
+                type="button"
+                className="chip chip-active"
+                onClick={() => setRules({ dbNaming: '' })}
+              >
+                {dbNaming} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomDbNaming ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomDbNaming(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other DB naming convention...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customDbNamingInput.trim()
+                  if (val) {
+                    setRules({ dbNaming: val })
+                    setCustomDbNamingInput('')
+                    setShowCustomDbNaming(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. snake_case (singular), TitleCase…"
+                  value={customDbNamingInput}
+                  onChange={(e) => setCustomDbNamingInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomDbNaming(false); setCustomDbNamingInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Error handling */}
@@ -161,12 +345,68 @@ export default function StepRules({ onNext, onBack }) {
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}>
             ERROR HANDLING STRATEGY
           </label>
-          <ChipSelector
-            options={ERROR_HANDLING}
-            selected={errorHandling ? [errorHandling] : []}
-            onToggle={(val) => setRules({ errorHandling: val })}
-            multiSelect={false}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {ERROR_HANDLING.map((opt) => {
+              const isActive = errorHandling === opt
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => setRules({ errorHandling: opt })}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+            {errorHandling && !ERROR_HANDLING.includes(errorHandling) && (
+              <button
+                type="button"
+                className="chip chip-active"
+                onClick={() => setRules({ errorHandling: '' })}
+              >
+                {errorHandling} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomErrorHandling ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomErrorHandling(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other error handling strategy...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customErrorHandlingInput.trim()
+                  if (val) {
+                    setRules({ errorHandling: val })
+                    setCustomErrorHandlingInput('')
+                    setShowCustomErrorHandling(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. Monadic error handling, Global error middleware…"
+                  value={customErrorHandlingInput}
+                  onChange={(e) => setCustomErrorHandlingInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomErrorHandling(false); setCustomErrorHandlingInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Anti-patterns */}
@@ -174,11 +414,69 @@ export default function StepRules({ onNext, onBack }) {
           <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}>
             ANTI-PATTERNS TO PROHIBIT
           </label>
-          <ChipSelector
-            options={ANTI_PATTERNS}
-            selected={antiPatterns}
-            onToggle={toggleAntiPattern}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {ANTI_PATTERNS.map((opt) => {
+              const isActive = antiPatterns.includes(opt)
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => toggleAntiPattern(opt)}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+            {antiPatterns.filter(x => !ANTI_PATTERNS.includes(x)).map((customAntiPattern) => (
+              <button
+                key={customAntiPattern}
+                type="button"
+                className="chip chip-active"
+                onClick={() => toggleAntiPattern(customAntiPattern)}
+              >
+                {customAntiPattern} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomAntiPattern ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomAntiPattern(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other anti-pattern...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customAntiPatternInput.trim()
+                  if (val && !antiPatterns.includes(val)) {
+                    toggleAntiPattern(val)
+                    setCustomAntiPatternInput('')
+                    setShowCustomAntiPattern(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. Hardcoded API endpoints, Nested ternary operators…"
+                  value={customAntiPatternInput}
+                  onChange={(e) => setCustomAntiPatternInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomAntiPattern(false); setCustomAntiPatternInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Extra constraints */}

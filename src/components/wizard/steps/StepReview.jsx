@@ -16,7 +16,7 @@ function SummaryRow({ label, value }) {
 }
 
 export default function StepReview({ onSubmit, onBack }) {
-  const { meta, pillars, engineMode, apiKey, setEngineMode, setApiKey } = useProjectStore()
+  const { projectMeta, pillars, engineMode, apiKey, setEngineMode, setApiKey } = useProjectStore()
   const [showKey, setShowKey] = useState(false)
   const isAI = engineMode === 'ai'
 
@@ -55,16 +55,16 @@ export default function StepReview({ onSubmit, onBack }) {
           <h3 style={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
             Project Specification
           </h3>
-          <SummaryRow label="Project Name" value={meta.name} />
-          <SummaryRow label="Platform" value={meta.platform} />
-          <SummaryRow label="Scale" value={meta.scale} />
-          <SummaryRow label="Architecture" value={pillars.architecture.stack} />
-          <SummaryRow label="Rendering" value={pillars.architecture.rendering} />
-          <SummaryRow label="Pattern" value={pillars.architecture.designPattern} />
-          <SummaryRow label="Design Vibe" value={pillars.design.vibe} />
-          <SummaryRow label="Database" value={pillars.architecture.database} />
-          <SummaryRow label="Tables Defined" value={pillars.schema.entities.length > 0 ? `${pillars.schema.entities.length} tables` : null} />
-          <SummaryRow label="Authentication" value={pillars.architecture.authStrategy} />
+          <SummaryRow label="Project Name" value={projectMeta?.name} />
+          <SummaryRow label="Platform" value={projectMeta?.platform} />
+          <SummaryRow label="Scale" value={projectMeta?.scale} />
+          <SummaryRow label="Architecture" value={pillars.architecture?.stack} />
+          <SummaryRow label="Rendering" value={pillars.architecture?.rendering} />
+          <SummaryRow label="Pattern" value={pillars.architecture?.designPattern} />
+          <SummaryRow label="Design Vibe" value={pillars.design?.vibe} />
+          <SummaryRow label="Database" value={pillars.architecture?.database} />
+          <SummaryRow label="Tables Defined" value={pillars.schema?.entities?.length > 0 ? `${pillars.schema.entities.length} tables` : null} />
+          <SummaryRow label="Authentication" value={pillars.architecture?.authStrategy} />
         </motion.div>
 
         {/* Engine Toggle */}

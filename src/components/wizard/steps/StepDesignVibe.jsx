@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Palette, Check } from 'lucide-react'
+import { Palette, Check, Plus } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
 import ChipSelector from '../ChipSelector'
 import useProjectStore from '@/store/useProjectStore'
@@ -48,12 +49,28 @@ export default function StepDesignVibe({ onNext, onBack }) {
   const { pillars, setDesign } = useProjectStore()
   const {
     vibe, primaryColor = '#6366f1', secondaryColor = '#ec4899', shades = ['#ffffff', '#111827'],
-    typography, secondaryTypography, customTypography, customSecondaryTypography,
-    uiLibraries = [], customUiLibrary,
-    iconSet, customIconSet,
-    layoutConcepts = [], customLayoutConcept,
+    typography, secondaryTypography,
+    uiLibraries = [],
+    iconSet,
+    layoutConcepts = [],
     spacing, roundedCorners,
   } = pillars.design
+
+  // Local state for PRD-style custom item addition forms
+  const [showCustomUi, setShowCustomUi] = useState(false)
+  const [customUiInput, setCustomUiInput] = useState('')
+
+  const [showCustomLayout, setShowCustomLayout] = useState(false)
+  const [customLayoutInput, setCustomLayoutInput] = useState('')
+
+  const [showCustomIcon, setShowCustomIcon] = useState(false)
+  const [customIconInput, setCustomIconInput] = useState('')
+
+  const [showCustomFont, setShowCustomFont] = useState(false)
+  const [customFontInput, setCustomFontInput] = useState('')
+
+  const [showCustomSecFont, setShowCustomSecFont] = useState(false)
+  const [customSecFontInput, setCustomSecFontInput] = useState('')
 
   const canProceed = !!vibe
 
@@ -267,31 +284,75 @@ export default function StepDesignVibe({ onNext, onBack }) {
           <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
             FRONTEND / UI LIBRARY (Select multiple)
           </label>
-          <ChipSelector
-            options={UI_LIBRARIES}
-            selected={uiLibraries}
-            onToggle={(val) => {
-              const current = uiLibraries || []
-              if (current.includes(val)) {
-                setDesign({ uiLibraries: current.filter(x => x !== val) })
-              } else {
-                setDesign({ uiLibraries: [...current, val] })
-              }
-            }}
-            multiSelect={true}
-          />
-          {uiLibraries.includes('Other') && (
-            <motion.input
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              type="text"
-              className="input-glass"
-              placeholder="Specify custom UI library/framework (e.g. Mantine, Ant Design, Semantic UI)"
-              value={customUiLibrary || ''}
-              onChange={(e) => setDesign({ customUiLibrary: e.target.value })}
-              style={{ marginTop: '4px', fontSize: '0.85rem' }}
-            />
-          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {UI_LIBRARIES.filter(x => x !== 'Other').map((lib) => {
+              const isActive = (uiLibraries || []).includes(lib)
+              return (
+                <button
+                  key={lib}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => {
+                    const current = uiLibraries || []
+                    const next = current.includes(lib) ? current.filter(x => x !== lib) : [...current, lib]
+                    setDesign({ uiLibraries: next })
+                  }}
+                >
+                  {lib}
+                </button>
+              )
+            })}
+            {(uiLibraries || []).filter(x => !UI_LIBRARIES.includes(x)).map((customLib) => (
+              <button
+                key={customLib}
+                type="button"
+                className="chip chip-active"
+                onClick={() => {
+                  setDesign({ uiLibraries: (uiLibraries || []).filter(x => x !== customLib) })
+                }}
+              >
+                {customLib} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomUi ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomUi(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other library...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customUiInput.trim()
+                  if (val && !(uiLibraries || []).includes(val)) {
+                    setDesign({ uiLibraries: [...(uiLibraries || []), val] })
+                    setCustomUiInput('')
+                    setShowCustomUi(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. Mantine, Ant Design, Semantic UI…"
+                  value={customUiInput}
+                  onChange={(e) => setCustomUiInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomUi(false); setCustomUiInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Layout Concept */}
@@ -299,31 +360,75 @@ export default function StepDesignVibe({ onNext, onBack }) {
           <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
             LAYOUT CONCEPT (Select multiple)
           </label>
-          <ChipSelector
-            options={LAYOUT_CONCEPTS}
-            selected={layoutConcepts}
-            onToggle={(val) => {
-              const current = layoutConcepts || []
-              if (current.includes(val)) {
-                setDesign({ layoutConcepts: current.filter(x => x !== val) })
-              } else {
-                setDesign({ layoutConcepts: [...current, val] })
-              }
-            }}
-            multiSelect={true}
-          />
-          {layoutConcepts.includes('Other') && (
-            <motion.input
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              type="text"
-              className="input-glass"
-              placeholder="Specify custom layout concept (e.g. Split Screen, Holy Grail, Masonry Grid)"
-              value={customLayoutConcept || ''}
-              onChange={(e) => setDesign({ customLayoutConcept: e.target.value })}
-              style={{ marginTop: '4px', fontSize: '0.85rem' }}
-            />
-          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {LAYOUT_CONCEPTS.filter(x => x !== 'Other').map((layout) => {
+              const isActive = (layoutConcepts || []).includes(layout)
+              return (
+                <button
+                  key={layout}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => {
+                    const current = layoutConcepts || []
+                    const next = current.includes(layout) ? current.filter(x => x !== layout) : [...current, layout]
+                    setDesign({ layoutConcepts: next })
+                  }}
+                >
+                  {layout}
+                </button>
+              )
+            })}
+            {(layoutConcepts || []).filter(x => !LAYOUT_CONCEPTS.includes(x)).map((customLayout) => (
+              <button
+                key={customLayout}
+                type="button"
+                className="chip chip-active"
+                onClick={() => {
+                  setDesign({ layoutConcepts: (layoutConcepts || []).filter(x => x !== customLayout) })
+                }}
+              >
+                {customLayout} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomLayout ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomLayout(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other layout concept...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customLayoutInput.trim()
+                  if (val && !(layoutConcepts || []).includes(val)) {
+                    setDesign({ layoutConcepts: [...(layoutConcepts || []), val] })
+                    setCustomLayoutInput('')
+                    setShowCustomLayout(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. Split Screen, Holy Grail, Masonry Grid…"
+                  value={customLayoutInput}
+                  onChange={(e) => setCustomLayoutInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomLayout(false); setCustomLayoutInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Icon Set */}
@@ -331,24 +436,68 @@ export default function StepDesignVibe({ onNext, onBack }) {
           <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>
             ICONOGRAPHY SET
           </label>
-          <ChipSelector
-            options={ICON_SETS}
-            selected={iconSet ? [iconSet] : []}
-            onToggle={(val) => setDesign({ iconSet: val })}
-            multiSelect={false}
-          />
-          {iconSet === 'Other' && (
-            <motion.input
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              type="text"
-              className="input-glass"
-              placeholder="Specify custom iconography set (e.g. Tabler Icons, Phosphor, Unicons)"
-              value={customIconSet || ''}
-              onChange={(e) => setDesign({ customIconSet: e.target.value })}
-              style={{ marginTop: '4px', fontSize: '0.85rem' }}
-            />
-          )}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {ICON_SETS.filter(x => x !== 'Other').map((icon) => {
+              const isActive = iconSet === icon
+              return (
+                <button
+                  key={icon}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => setDesign({ iconSet: icon })}
+                >
+                  {icon}
+                </button>
+              )
+            })}
+            {iconSet && !ICON_SETS.includes(iconSet) && (
+              <button
+                type="button"
+                className="chip chip-active"
+                onClick={() => setDesign({ iconSet: '' })}
+              >
+                {iconSet} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+              </button>
+            )}
+          </div>
+
+          <div style={{ marginTop: '2px' }}>
+            {!showCustomIcon ? (
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setShowCustomIcon(true)}
+                style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Plus size={12} /> Other iconography set...
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const val = customIconInput.trim()
+                  if (val) {
+                    setDesign({ iconSet: val })
+                    setCustomIconInput('')
+                    setShowCustomIcon(false)
+                  }
+                }}
+                style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+              >
+                <input
+                  className="input-glass"
+                  type="text"
+                  placeholder="e.g. Tabler Icons, Phosphor, Unicons…"
+                  value={customIconInput}
+                  onChange={(e) => setCustomIconInput(e.target.value)}
+                  style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                  autoFocus
+                />
+                <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                <button className="btn-ghost" type="button" onClick={() => { setShowCustomIcon(false); setCustomIconInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+              </form>
+            )}
+          </div>
         </motion.div>
 
         {/* Typography */}
@@ -359,32 +508,65 @@ export default function StepDesignVibe({ onNext, onBack }) {
               PRIMARY TYPOGRAPHY
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {FONTS.map((font) => (
-                <motion.button
+              {FONTS.filter(x => x !== 'Other').map((font) => (
+                <button
                   key={font}
+                  type="button"
                   onClick={() => setDesign({ typography: font })}
                   className={`chip ${typography === font ? 'chip-active' : ''}`}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  aria-pressed={typography === font}
-                  style={{ fontFamily: font !== 'Other' ? font : 'inherit', fontSize: '0.8rem' }}
+                  style={{ fontFamily: font, fontSize: '0.8rem' }}
                 >
                   {font}
-                </motion.button>
+                </button>
               ))}
+              {typography && !FONTS.includes(typography) && (
+                <button
+                  type="button"
+                  className="chip chip-active"
+                  onClick={() => setDesign({ typography: '' })}
+                >
+                  {typography} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+                </button>
+              )}
             </div>
-            {typography === 'Other' && (
-              <motion.input
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                type="text"
-                className="input-glass"
-                placeholder="Specify custom font (e.g. Space Grotesk, Syne)"
-                value={customTypography || ''}
-                onChange={(e) => setDesign({ customTypography: e.target.value })}
-                style={{ fontSize: '0.82rem' }}
-              />
-            )}
+
+            <div style={{ marginTop: '2px' }}>
+              {!showCustomFont ? (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowCustomFont(true)}
+                  style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Plus size={12} /> Other font...
+                </button>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const val = customFontInput.trim()
+                    if (val) {
+                      setDesign({ typography: val })
+                      setCustomFontInput('')
+                      setShowCustomFont(false)
+                    }
+                  }}
+                  style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+                >
+                  <input
+                    className="input-glass"
+                    type="text"
+                    placeholder="e.g. Space Grotesk, Syne…"
+                    value={customFontInput}
+                    onChange={(e) => setCustomFontInput(e.target.value)}
+                    style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                    autoFocus
+                  />
+                  <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                  <button className="btn-ghost" type="button" onClick={() => { setShowCustomFont(false); setCustomFontInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+                </form>
+              )}
+            </div>
           </div>
 
           {/* Secondary Typography */}
@@ -393,32 +575,65 @@ export default function StepDesignVibe({ onNext, onBack }) {
               SECONDARY TYPOGRAPHY
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-              {FONTS.map((font) => (
-                <motion.button
+              {FONTS.filter(x => x !== 'Other').map((font) => (
+                <button
                   key={`sec-${font}`}
+                  type="button"
                   onClick={() => setDesign({ secondaryTypography: font })}
                   className={`chip ${secondaryTypography === font ? 'chip-active' : ''}`}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  aria-pressed={secondaryTypography === font}
-                  style={{ fontFamily: font !== 'Other' ? font : 'inherit', fontSize: '0.8rem' }}
+                  style={{ fontFamily: font, fontSize: '0.8rem' }}
                 >
                   {font}
-                </motion.button>
+                </button>
               ))}
+              {secondaryTypography && !FONTS.includes(secondaryTypography) && (
+                <button
+                  type="button"
+                  className="chip chip-active"
+                  onClick={() => setDesign({ secondaryTypography: '' })}
+                >
+                  {secondaryTypography} <span style={{ opacity: 0.6, marginLeft: '2px' }}>×</span>
+                </button>
+              )}
             </div>
-            {secondaryTypography === 'Other' && (
-              <motion.input
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                type="text"
-                className="input-glass"
-                placeholder="Specify secondary font (e.g. JetBrains Mono)"
-                value={customSecondaryTypography || ''}
-                onChange={(e) => setDesign({ customSecondaryTypography: e.target.value })}
-                style={{ fontSize: '0.82rem' }}
-              />
-            )}
+
+            <div style={{ marginTop: '2px' }}>
+              {!showCustomSecFont ? (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowCustomSecFont(true)}
+                  style={{ padding: '4px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Plus size={12} /> Other secondary font...
+                </button>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    const val = customSecFontInput.trim()
+                    if (val) {
+                      setDesign({ secondaryTypography: val })
+                      setCustomSecFontInput('')
+                      setShowCustomSecFont(false)
+                    }
+                  }}
+                  style={{ display: 'flex', gap: '6px', marginTop: '4px' }}
+                >
+                  <input
+                    className="input-glass"
+                    type="text"
+                    placeholder="e.g. JetBrains Mono, Fira Code…"
+                    value={customSecFontInput}
+                    onChange={(e) => setCustomSecFontInput(e.target.value)}
+                    style={{ padding: '6px 10px', fontSize: '0.78rem', flex: 1 }}
+                    autoFocus
+                  />
+                  <button className="btn-primary" type="submit" style={{ padding: '6px 12px', fontSize: '0.78rem' }}>Add</button>
+                  <button className="btn-ghost" type="button" onClick={() => { setShowCustomSecFont(false); setCustomSecFontInput('') }} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Cancel</button>
+                </form>
+              )}
+            </div>
           </div>
         </motion.div>
 

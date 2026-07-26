@@ -132,9 +132,9 @@ export default function WizardShell() {
         {/* Step area */}
         <div style={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
-          padding: '24px 16px',
+          padding: '32px 16px',
           borderRight: '1px solid var(--color-border)',
           position: 'relative',
           overflowY: 'auto',
