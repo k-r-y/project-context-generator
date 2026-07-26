@@ -85,7 +85,15 @@ export default function AuthModal({ onClose }) {
       onClose()
     } catch (err) {
       console.error(err)
-      setError(err.message || 'Authentication failed. Please check credentials.')
+      let msg = err.message || 'Authentication failed.'
+      if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found'
+      ) {
+        msg = 'Invalid email or password. Check your credentials or click "Sign up" to create an account.'
+      }
+      setError(msg)
     } finally {
       setLoading(false)
     }

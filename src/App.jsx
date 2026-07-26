@@ -9,10 +9,28 @@ import { getFirebaseInstance } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import useProjectStore from '@/store/useProjectStore'
 
+// Helper to retry dynamic imports if a new Vercel deployment changed chunk hashes (404 fallback)
+function lazyWithRetry(componentImport) {
+  return lazy(async () => {
+    const pageReloaded = JSON.parse(sessionStorage.getItem('pcg_chunk_reloaded') || 'false')
+    try {
+      const component = await componentImport()
+      sessionStorage.setItem('pcg_chunk_reloaded', 'false')
+      return component
+    } catch (error) {
+      if (!pageReloaded) {
+        sessionStorage.setItem('pcg_chunk_reloaded', 'true')
+        window.location.reload()
+      }
+      throw error
+    }
+  })
+}
+
 // Lazy load secondary routes for fast initial access & smaller initial JS bundle
-const WizardShell = lazy(() => import('@/components/wizard/WizardShell'))
-const Dashboard = lazy(() => import('@/components/dashboard/Dashboard'))
-const ProjectsDashboard = lazy(() => import('@/pages/ProjectsDashboard'))
+const WizardShell = lazyWithRetry(() => import('@/components/wizard/WizardShell'))
+const Dashboard = lazyWithRetry(() => import('@/components/dashboard/Dashboard'))
+const ProjectsDashboard = lazyWithRetry(() => import('@/pages/ProjectsDashboard'))
 
 function AnimatedRoutes() {
   const location = useLocation()
