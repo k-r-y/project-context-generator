@@ -66,9 +66,12 @@ export default function WizardShell() {
         borderBottom: '1px solid var(--color-border)',
         gap: '12px',
       }}>
-        <span style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
-          PCG
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img src="/favicon.svg" alt="PCG Logo" style={{ width: '20px', height: '20px' }} />
+          <span style={{ fontWeight: 700, fontSize: '0.95rem', letterSpacing: '-0.02em', color: 'var(--color-text-primary)' }}>
+            PCG
+          </span>
+        </div>
 
         {/* Step labels - hidden on mobile */}
         <nav className="wizard-nav" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>

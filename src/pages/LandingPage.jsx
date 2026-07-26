@@ -122,15 +122,24 @@ export default function LandingPage() {
           justifyContent: "space-between",
         }}
       >
-        <span
+        <div
           style={{
-            fontWeight: 700,
-            fontSize: "0.9rem",
-            color: "var(--color-text-primary)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
           }}
         >
-          PCG
-        </span>
+          <img src="/favicon.svg" alt="PCG Logo" style={{ width: "22px", height: "22px" }} />
+          <span
+            style={{
+              fontWeight: 700,
+              fontSize: "0.9rem",
+              color: "var(--color-text-primary)",
+            }}
+          >
+            PCG
+          </span>
+        </div>
         <nav
           aria-label="Main navigation"
           style={{ display: "flex", alignItems: "center", gap: "8px" }}
