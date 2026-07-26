@@ -159,19 +159,19 @@ export default function Dashboard() {
         </div>
 
         {/* Right: actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', flexShrink: 1, paddingRight: '4px' }}>
           <ActionBar activeDoc={activeDoc} content={content} />
           
-          <span style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
+          <span style={{ width: '1px', height: '16px', background: 'var(--color-border)', flexShrink: 0 }} />
 
           {/* Edit / Preview Toggle */}
           <InteractiveButton
             className={isEditing ? 'btn-primary' : 'btn-ghost'}
             onClick={() => setIsEditing(!isEditing)}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem', flexShrink: 0 }}
           >
             {isEditing ? <Eye size={13} /> : <Edit size={13} />}
-            <span className="hide-mobile">{isEditing ? 'View Markdown' : 'Edit'}</span>
+            <span className="hide-tablet">{isEditing ? 'View Markdown' : 'Edit'}</span>
           </InteractiveButton>
 
           {/* Save to Cloud */}
@@ -179,15 +179,15 @@ export default function Dashboard() {
             className="btn-ghost"
             onClick={handleSaveToCloud}
             disabled={saveLoading}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '7px 10px', fontSize: '0.8rem', flexShrink: 0 }}
           >
             <Cloud size={13} />
-            <span className="hide-mobile">{saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}</span>
+            <span className="hide-tablet">{saveLoading ? 'Saving…' : currentDocId ? 'Update Cloud' : 'Save to Cloud'}</span>
           </InteractiveButton>
 
           {/* User Auth Profile */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
               <InteractiveButton
                 className="btn-ghost"
                 onClick={() => navigate('/projects')}
@@ -195,7 +195,7 @@ export default function Dashboard() {
                 title="View Saved Projects"
               >
                 <Folder size={13} />
-                <span className="hide-mobile">{user.displayName || user.email.split('@')[0]}</span>
+                <span className="hide-tablet">{user.displayName || user.email.split('@')[0]}</span>
               </InteractiveButton>
               <InteractiveButton
                 className="btn-ghost"
@@ -204,29 +204,29 @@ export default function Dashboard() {
                 aria-label="Logout"
                 title="Logout"
               >
-                <LogOut size={14} /> Log out
+                <LogOut size={14} /> <span className="hide-tablet">Log out</span>
               </InteractiveButton>
             </div>
           ) : (
             <InteractiveButton
               className="btn-ghost"
               onClick={() => setShowAuth(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', flexShrink: 0 }}
             >
-              <LogIn size={14} /> <span className="hide-mobile">Log in</span>
+              <LogIn size={14} /> <span className="hide-tablet">Log in</span>
             </InteractiveButton>
           )}
 
-          <span className="hide-mobile" style={{ width: '1px', height: '16px', background: 'var(--color-border)' }} />
+          <span className="hide-tablet" style={{ width: '1px', height: '16px', background: 'var(--color-border)', flexShrink: 0 }} />
 
           <button
             className="btn-ghost"
             onClick={handleReset}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}
             aria-label="Start over"
           >
             <RotateCcw size={13} />
-            <span className="hide-mobile">Start over</span>
+            <span className="hide-tablet">Start over</span>
           </button>
         </div>
       </header>
@@ -260,6 +260,14 @@ export default function Dashboard() {
             Files
           </div>
           <DocumentNav activeDoc={activeDoc} onSelect={setActiveDoc} />
+
+          {/* Tablet-only panel for AI generation & checklist when Col 3 is hidden */}
+          <div className="tablet-only-panel" style={{ marginTop: '16px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+            <AIToggle activeDoc={activeDoc} />
+            <div style={{ marginTop: '12px' }}>
+              <MetricsChecklist />
+            </div>
+          </div>
         </motion.aside>
 
         {/* Col 2 — Document viewer */}
@@ -378,8 +386,9 @@ export default function Dashboard() {
 
       <style>{`
         @media (max-width: 1100px) {
-          .dashboard-grid { grid-template-columns: 180px 1fr !important; }
+          .dashboard-grid { grid-template-columns: 210px 1fr !important; }
           .dashboard-grid > aside:last-child { display: none; }
+          .tablet-only-panel { display: flex !important; flex-direction: column; gap: 12px; }
         }
         @media (max-width: 768px) {
           .dashboard-grid { grid-template-columns: 1fr !important; }

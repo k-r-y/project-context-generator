@@ -504,6 +504,10 @@ textarea.input-glass {
   border-collapse: collapse;
   margin: 1rem 0;
   font-size: 0.8rem;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
 }
 
 .markdown-render th {
@@ -526,7 +530,7 @@ textarea.input-glass {
 }
 
 /* ============================================
-   ANIMATIONS
+   ANIMATIONS & RESPONSIVE UTILITIES
    ============================================ */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
@@ -573,6 +577,12 @@ textarea.input-glass {
 .transform-gpu {
   transform: translateZ(0);
   backface-visibility: hidden;
+}
+
+@media (max-width: 1024px) {
+  .hide-tablet {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {
