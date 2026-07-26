@@ -245,7 +245,7 @@ export default function LandingPage() {
           transition={{ duration: 0.5, ease }}
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
             gap: '1px',
             marginTop: '80px',
             border: '1px solid var(--color-border)',
@@ -276,21 +276,43 @@ export default function LandingPage() {
       </main>
 
       {/* Bottom note */}
-      <footer role="contentinfo">
-        <motion.p
+      <footer
+        role="contentinfo"
+        style={{
+          marginTop: 'auto',
+          paddingTop: '40px',
+          paddingBottom: '20px',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.8, duration: 0.6 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
           style={{
-            position: 'fixed',
-            bottom: '20px',
-            fontSize: '0.72rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: '6px 12px',
+            fontSize: '0.75rem',
             color: 'var(--color-text-muted)',
             letterSpacing: '0.01em',
+            textAlign: 'center',
+            maxWidth: '560px',
+            width: '100%',
+            padding: '0 16px',
           }}
         >
-          Dynamic cloud sync · Runs in browser · localStorage persistence
-        </motion.p>
+          <span>Dynamic cloud sync</span>
+          <span style={{ opacity: 0.35 }}>·</span>
+          <span>Runs in browser</span>
+          <span style={{ opacity: 0.35 }}>·</span>
+          <span>localStorage persistence</span>
+        </motion.div>
       </footer>
 
       {/* Modals */}
