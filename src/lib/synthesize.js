@@ -20,9 +20,11 @@ export function generateSystemPRD(answers) {
 
   return `# Product Requirements Document (PRD)
 
+> **Elevator Pitch:** ${meta.pitch || 'Not specified'}
+
 ## 1. Project Overview
 - **Name:** ${meta.name}
-- **Objective:** ${meta.pitch}
+- **Elevator Pitch:** ${meta.pitch || 'Not specified'}
 - **Target Audience:** ${meta.targetAudience}
 
 ## 2. Goals & Success Metrics

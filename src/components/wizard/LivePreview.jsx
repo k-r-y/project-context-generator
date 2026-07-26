@@ -7,10 +7,10 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
   const { name, pitch, targetAudience, businessGoals, successMetrics, mvpFeatures, outOfScope } = projectMeta
   const { architecture, design, rules } = pillars
 
-  if (!name) return '_Start answering questions to see a preview…_'
+  if (!name && !pitch) return '_Start answering questions to see a preview…_'
 
-  let preview = `# ${name}\n\n`
-  if (pitch) preview += `> ${pitch}\n\n`
+  let preview = `# ${name || 'Untitled Project'}\n\n`
+  if (pitch) preview += `> **Elevator Pitch:** ${pitch}\n\n`
 
   // PRD step preview details
   if (currentStep >= 1) {

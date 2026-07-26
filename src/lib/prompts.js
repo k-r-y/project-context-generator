@@ -34,9 +34,11 @@ Generate EXACTLY this structure with real, specific content (do not use any emoj
 
 # Product Requirements Document (PRD)
 
+> **Elevator Pitch:** ${meta.pitch}
+
 ## 1. Project Overview
 - **Name:** ${meta.name}
-- **Objective:** ${meta.pitch}
+- **Elevator Pitch:** ${meta.pitch}
 - **Target Audience:** ${meta.targetAudience}
 
 ## 2. Goals & Success Metrics
@@ -70,6 +72,7 @@ export function buildArchitecturePrompt(answers) {
   return `You are a senior software architect. Generate an Architecture document in Markdown using EXACTLY this structure. Include specific versions, real folder trees, and complete data flow descriptions.
 
 PROJECT NAME: ${meta.name}
+ELEVATOR PITCH: ${meta.pitch || 'Not specified'}
 STACK: ${fmtStack(pillars.architecture.stack)}
 RENDERING: ${pillars.architecture.rendering}
 DESIGN PATTERN: ${pillars.architecture.designPattern || 'Module-Based'}
