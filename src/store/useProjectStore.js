@@ -5,12 +5,14 @@ const defaultState = {
   projectMeta: {
     name: '',
     pitch: '',
+    problemToSolve: '',
     platform: '', // 'Web' | 'iOS' | 'Android' | 'Cloud' | 'Desktop' | 'Other'
     targetAudience: '',
     businessGoals: '',
     successMetrics: '',
     mvpFeatures: '',
     outOfScope: '',
+    expectedUsers: '',
   },
   pillars: {
     architecture: {
@@ -23,7 +25,6 @@ const defaultState = {
     },
     design: {
       vibe: '',
-      shades: ['#ffffff', '#111827'],
       primaryColor: '#6366f1',
       secondaryColor: '#ec4899',
       selectedColors: [],
@@ -31,14 +32,28 @@ const defaultState = {
       secondaryTypography: '',
       customTypography: '',
       customSecondaryTypography: '',
-      uiLibraries: [],
-      customUiLibrary: '',
+      cssArchitecture: [],
+      customCssArchitecture: '',
+      componentLibrary: [],
+      customComponentLibrary: '',
       iconSet: '',
       customIconSet: '',
+      baseTheme: 'Dark',
+      surfaceTreatment: '',
       layoutConcepts: [],
       customLayoutConcept: '',
       spacing: '',
       roundedCorners: '',
+      gridMath: '',
+      elevationStyle: '',
+      animationFeel: '',
+      typeScale: '',
+      loadingStyle: {
+        page: 'skeleton',
+        component: 'spinner',
+        action: 'spinner',
+        scroll: 'spinner'
+      },
     },
     rules: {
       language: '',
@@ -49,6 +64,12 @@ const defaultState = {
       componentNaming: '',
       dbNaming: '',
       errorHandling: '',
+    },
+    security: {
+      compliance: [],
+      dataProtection: [],
+      apiSecurity: [],
+      vulnerabilityProtection: [],
     },
     schema: {
       entities: [],
@@ -66,7 +87,7 @@ const defaultState = {
   outputMode: 'system',
   apiKey: '',
   currentStep: 0,
-  totalSteps: 8,
+  totalSteps: 9,
   isGenerating: false,
   generationError: null,
 
@@ -101,6 +122,11 @@ const useProjectStore = create(
           pillars: { ...s.pillars, rules: { ...s.pillars.rules, ...data } },
         })),
 
+      setSecurity: (data) =>
+        set((s) => ({
+          pillars: { ...s.pillars, security: { ...s.pillars.security, ...data } },
+        })),
+
       setSchema: (data) =>
         set((s) => ({
           pillars: { ...s.pillars, schema: { ...s.pillars.schema, ...data } },
@@ -115,9 +141,31 @@ const useProjectStore = create(
 
       toggleAntiPattern: (item) =>
         set((s) => {
-          const list = s.pillars.rules.antiPatterns
-          const next = list.includes(item) ? list.filter((x) => x !== item) : [...list, item]
+          const list = s.pillars.rules.antiPatterns || []
+          let next
+          if (list.includes(item)) {
+            next = list.filter((x) => x !== item)
+          } else {
+            if (item === 'None') {
+              next = ['None']
+            } else {
+              next = [...list.filter((x) => x !== 'None'), item]
+            }
+          }
           return { pillars: { ...s.pillars, rules: { ...s.pillars.rules, antiPatterns: next } } }
+        }),
+
+      toggleSecurityItem: (category, item) =>
+        set((s) => {
+          const list = s.pillars.security[category] || []
+          let next;
+          if (item === 'None') {
+            next = ['None']
+          } else {
+            next = list.includes(item) ? list.filter((x) => x !== item) : [...list.filter(x => x !== 'None'), item]
+          }
+          if (next.length === 0) next = []
+          return { pillars: { ...s.pillars, security: { ...s.pillars.security, [category]: next } } }
         }),
 
       // Navigation

@@ -30,7 +30,7 @@ export default function StepWelcome({ onNext }) {
     setMeta({ platform: val || 'Other' })
   }
 
-  const canProceed = projectMeta.name.trim().length > 0 && projectMeta.platform.trim().length > 0
+  const canProceed = projectMeta.name.trim().length > 0 && projectMeta.platform.trim().length > 0 && projectMeta.pitch.trim().length > 0
 
   return (
     <QuestionCard>
@@ -94,7 +94,15 @@ export default function StepWelcome({ onNext }) {
             <label htmlFor="project-pitch" className="label-xs">
               Elevator pitch
             </label>
-            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                type="button" 
+                className="btn-ghost" 
+                style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+                onClick={() => setMeta({ pitch: 'None' })}
+              >
+                None
+              </button>
               {projectMeta.pitch.length}/300
             </span>
           </div>

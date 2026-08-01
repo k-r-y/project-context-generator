@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 /* ============================================
@@ -34,8 +34,9 @@
   --color-danger:       #ef4444;
 
   /* Typography */
-  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Radius */
   --radius-sm: 6px;
@@ -43,10 +44,23 @@
   --radius-lg: 14px;
   --radius-xl: 18px;
 
-  /* Shadows */
+  /* Shadows & Elevation (Material) */
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
   --shadow-md:  0 4px 12px rgba(0,0,0,0.5);
   --shadow-lg:  0 8px 24px rgba(0,0,0,0.6);
+  --shadow-level-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  --shadow-level-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  --shadow-level-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+
+  /* Blurs (Apple HIG) */
+  --blur-sm: 8px;
+  --blur-md: 16px;
+  --blur-lg: 24px;
+
+  /* State Layers (Material) */
+  --state-hover: 0.08;
+  --state-focus: 0.12;
+  --state-pressed: 0.16;
 
   /* Motion */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
@@ -144,6 +158,7 @@ body {
 }
 
 .heading-xl {
+  font-family: var(--font-serif);
   font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -152,6 +167,7 @@ body {
 }
 
 .heading-lg {
+  font-family: var(--font-serif);
   font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.03em;
@@ -159,6 +175,7 @@ body {
 }
 
 .heading-md {
+  font-family: var(--font-sans);
   font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: -0.02em;

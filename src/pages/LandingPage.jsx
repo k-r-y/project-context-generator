@@ -129,7 +129,11 @@ export default function LandingPage() {
             gap: "8px",
           }}
         >
-          <img src="/favicon.svg" alt="PCG Logo" style={{ width: "22px", height: "22px" }} />
+          <img
+            src="/favicon.svg"
+            alt="PCG Logo"
+            style={{ width: "22px", height: "22px" }}
+          />
           <span
             style={{
               fontWeight: 700,
@@ -169,7 +173,12 @@ export default function LandingPage() {
               <InteractiveButton
                 className="btn-ghost"
                 onClick={handleLogout}
-                style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.8rem" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontSize: "0.8rem",
+                }}
                 title="Logout"
                 aria-label="Log out"
               >
@@ -384,7 +393,10 @@ export default function LandingPage() {
       </main>
 
       {/* Bottom note & Copyright */}
-      <footer role="contentinfo" style={{ width: "100%", textAlign: "center", marginTop: "40px" }}>
+      <footer
+        role="contentinfo"
+        style={{ width: "100%", textAlign: "center", marginTop: "40px" }}
+      >
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -407,7 +419,8 @@ export default function LandingPage() {
             color: "rgba(255, 255, 255, 0.35)",
           }}
         >
-          &copy; {new Date().getFullYear()} <b>k-r-y</b> Project Context Generator. All rights reserved.
+          &copy; {new Date().getFullYear()} <b>k-r-y</b> Project Context
+          Generator. All rights reserved.
         </motion.p>
       </footer>
 

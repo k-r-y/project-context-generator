@@ -7,10 +7,11 @@ import useProjectStore from '@/store/useProjectStore'
 import { staggerContainer, staggerItem } from '@/lib/animationVariants'
 
 const LANGUAGE_OPTIONS = [
-  'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust',
+  'JavaScript', 'TypeScript', 'Python', 'PHP', 'Java', 'Ruby', 'Go', 'Rust',
   'C#', 'Swift', 'Kotlin', 'C++',
 ]
-const TESTING_OPTIONS = ['Vitest', 'Jest', 'Playwright', 'Cypress', 'Testing Library', 'JUnit', 'PyTest', 'None']
+const TESTING_OPTIONS = ['Vitest', 'Jest', 'Playwright', 'Cypress', 'Testing Library', 'JUnit', 'PyTest', 'PHPUnit', 'Pest', 'RSpec', 'None']
+
 
 const FILE_NAMING = ['kebab-case', 'PascalCase', 'camelCase']
 const DB_NAMING = ['snake_case (plural)', 'camelCase', 'PascalCase']
@@ -25,7 +26,7 @@ const ANTI_PATTERNS = [
   'Prop drilling', 'Monolithic components', 'Inline styles',
   'Magic strings/numbers', 'God objects', 'Circular imports',
   'Mutable global state', 'Sync blocking in render', 'console.log in prod',
-  'any/unknown types', 'Unused dependencies', 'Deeply nested callbacks',
+  'any/unknown types', 'Unused dependencies', 'Deeply nested callbacks', 'None'
 ]
 
 export default function StepRules({ onNext, onBack }) {
@@ -62,6 +63,15 @@ export default function StepRules({ onNext, onBack }) {
       setRules({ language: 'TypeScript' })
     }
   }, [selectedLangs, language, setRules])
+
+  const canProceed = 
+    !!language &&
+    !!testing &&
+    antiPatterns.length > 0 &&
+    (extraConstraints !== undefined && extraConstraints !== null) &&
+    !!fileNaming &&
+    !!dbNaming &&
+    !!errorHandling
 
   return (
     <QuestionCard>
@@ -481,12 +491,22 @@ export default function StepRules({ onNext, onBack }) {
 
         {/* Extra constraints */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label
-            htmlFor="extra-constraints"
-            style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}
-          >
-            ADDITIONAL CONSTRAINTS (OPTIONAL)
-          </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label
+              htmlFor="extra-constraints"
+              style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.07em' }}
+            >
+              ADDITIONAL CONSTRAINTS
+            </label>
+            <button 
+              type="button" 
+              className="btn-ghost" 
+              style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+              onClick={() => setRules({ extraConstraints: 'None' })}
+            >
+              None
+            </button>
+          </div>
           <textarea
             id="extra-constraints"
             className="input-glass"
@@ -502,6 +522,7 @@ export default function StepRules({ onNext, onBack }) {
           <motion.button
             className="btn-primary"
             onClick={onNext}
+            disabled={!canProceed}
             style={{ flex: 2 }}
             whileTap={{ scale: 0.97 }}
           >

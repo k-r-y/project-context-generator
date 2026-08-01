@@ -61,6 +61,43 @@ export async function downloadAllAsZip(outputs, projectName) {
     }
   }
 
+  const aiInstruction = `AI INSTRUCTION: Never output raw console.log in production code. Write full, complete files without using placeholder comments like \`// rest of code here\`.\n\n`
+  
+  const combinedRules = [
+    aiInstruction,
+    outputs.prd ? `--- PRD ---\n${outputs.prd}\n\n` : '',
+    outputs.architecture ? `--- ARCHITECTURE ---\n${outputs.architecture}\n\n` : '',
+    outputs.design ? `--- DESIGN ---\n${outputs.design}\n\n` : '',
+    outputs.schema ? `--- SCHEMA ---\n${outputs.schema}\n\n` : '',
+    outputs.rules ? `--- RULES ---\n${outputs.rules}\n\n` : ''
+  ].join('')
+
+  zip.file('.cursorrules', combinedRules)
+  zip.file('.windsurfrules', combinedRules)
+  zip.file('.clinerules', combinedRules)
+
+  const instructionsMd = `# How to use these Context Files
+
+This folder contains the context files generated for your project. They are designed to give AI coding assistants (like Cursor, Windsurf, Cline, or GitHub Copilot) a complete understanding of what you are building.
+
+## Using with AI Code Editors
+
+If you are using Cursor, Windsurf, or Cline:
+1. Place the hidden \`.cursorrules\`, \`.windsurfrules\`, or \`.clinerules\` files in the root of your project directory. 
+2. The AI will automatically read these rules every time you open the project.
+
+## Manual Usage (Chat / Prompts)
+
+If you are using standard ChatGPT, Claude, or another chat-based interface:
+1. Upload the entire \`context\` folder or copy-paste the contents of the files into your first prompt.
+2. Ask the AI to read the files and acknowledge the constraints before you start asking it to write code.
+
+## Keeping them updated
+As your project evolves, feel free to edit these markdown files directly. Your AI assistant will adapt to your new rules and requirements!
+`
+
+  zip.file('INSTRUCTIONS.md', instructionsMd)
+
   const blob = await zip.generateAsync({ type: 'blob' })
   const safeName = projectName?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'project'
   const url = URL.createObjectURL(blob)

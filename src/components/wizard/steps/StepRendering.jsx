@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Globe, Plus, Check } from 'lucide-react'
 import QuestionCard from '../QuestionCard'
@@ -12,21 +12,24 @@ const WEB_RENDERING = [
   { value: 'SSR', label: 'Server-Side Rendering', description: 'HTML generated per request. Best for SEO-heavy content sites.' },
   { value: 'SSG', label: 'Static Site Generation', description: 'Pre-built HTML at build time. Best for blogs and marketing sites.' },
   { value: 'Hybrid', label: 'Hybrid (ISR)', description: 'Mix of SSR and SSG with incremental regeneration.' },
+  { value: 'None', label: 'None', description: 'No specific rendering pattern chosen yet.' },
 ]
 
 const APP_RENDERING = [
   { value: 'Native', label: 'Native Client', description: 'Fully compiled native application client (iOS/Android/macOS/Windows).' },
   { value: 'Cross-Platform', label: 'Cross-Platform Framework', description: 'Hybrid wrapper or bridge client (React Native, Flutter, Tauri, Electron).' },
+  { value: 'None', label: 'None', description: 'No specific rendering pattern chosen yet.' },
 ]
 
 const CLOUD_RENDERING = [
   { value: 'Serverless Functions', label: 'Serverless Functions', description: 'Event-driven, stateless functions. Auto-scales to zero (AWS Lambda, Cloud Functions).' },
   { value: 'Containerized Service', label: 'Containerized Microservice', description: 'Long-running API service running inside Docker/K8s/ECS containers.' },
   { value: 'Monolithic API Server', label: 'Monolithic VM Server', description: 'Traditional virtual machine setup running a single consolidated process.' },
+  { value: 'None', label: 'None', description: 'No specific deployment chosen yet.' },
 ]
 
 // Common Design Patterns
-const DESIGN_PATTERNS = ['MVC', 'Repository Pattern', 'Module-Based', 'Feature-Sliced (FSD)', 'Microservices', 'Serverless']
+const DESIGN_PATTERNS = ['MVC', 'Repository Pattern', 'Module-Based', 'Feature-Sliced (FSD)', 'Microservices', 'Serverless', 'None']
 
 export default function StepRendering({ onNext, onBack }) {
   const { projectMeta, pillars, setArchitecture } = useProjectStore()
@@ -44,10 +47,17 @@ export default function StepRendering({ onNext, onBack }) {
   // Resolve Rendering choices based on platform
   const getRenderingOptions = () => {
     const p = (projectMeta.platform || '').toLowerCase()
-    if (p.includes('web')) return WEB_RENDERING
-    if (p.includes('ios') || p.includes('android') || p.includes('mobile') || p.includes('desktop')) return APP_RENDERING
-    if (p.includes('cloud')) return CLOUD_RENDERING
-    return [...WEB_RENDERING, ...APP_RENDERING]
+    let options = []
+    if (p.includes('web')) options = WEB_RENDERING
+    else if (p.includes('ios') || p.includes('android') || p.includes('mobile') || p.includes('desktop')) options = APP_RENDERING
+    else if (p.includes('cloud')) options = CLOUD_RENDERING
+    else options = [...WEB_RENDERING, ...APP_RENDERING]
+
+    const stack = pillars.architecture.stack || []
+    if (stack.includes('Next.js')) {
+      options = options.filter(opt => opt.value === 'Hybrid' || opt.value === 'SSR')
+    }
+    return options
   }
 
   const renderingOptions = getRenderingOptions()
@@ -72,6 +82,13 @@ export default function StepRendering({ onNext, onBack }) {
   }
 
   const authOptions = getAuthOptions()
+
+  useEffect(() => {
+    // If current rendering choice is no longer available in the filtered options, clear it.
+    if (rendering && !renderingOptions.map(o => o.value).includes(rendering)) {
+      setArchitecture({ rendering: '' })
+    }
+  }, [pillars.architecture.stack, projectMeta.platform, rendering, renderingOptions, setArchitecture])
 
   const handleAddCustomRendering = (e) => {
     e.preventDefault()

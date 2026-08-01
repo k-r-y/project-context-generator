@@ -23,9 +23,10 @@ const DEPLOY_OPTIONS = [
   { value: 'Fly.io' },
   { value: 'AWS' },
   { value: 'Docker' },
+  { value: 'None' },
 ]
 
-const DATA_PATTERNS = ['REST', 'GraphQL', 'tRPC', 'Server Actions']
+const DATA_PATTERNS = ['REST', 'GraphQL', 'tRPC', 'Server Actions', 'None']
 
 const COLUMN_TYPES = [
   'UUID',
@@ -98,7 +99,7 @@ export default function StepDatabase({ onNext, onBack }) {
     }
   }, [selectedDbs, selectedDeploys, selectedApis, database, deployment, dataPattern, setArchitecture, setSchema])
 
-  const canProceed = !!database
+  const canProceed = !!database && !!dataPattern && !!deployment
 
   // Toggle table expansion
   const toggleTable = (idx) => {

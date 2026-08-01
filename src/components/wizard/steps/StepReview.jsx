@@ -8,9 +8,11 @@ import { staggerContainer, staggerItem } from '@/lib/animationVariants'
 function SummaryRow({ label, value }) {
   if (!value || (Array.isArray(value) && value.length === 0)) return null
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.85rem' }}>
-      <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>{label}</span>
-      <span style={{ color: 'white', fontWeight: 600 }}>{Array.isArray(value) ? value.join(', ') : value}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '0.85rem', gap: '16px' }}>
+      <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 500, flexShrink: 0 }}>{label}</span>
+      <span style={{ color: 'white', fontWeight: 600, textAlign: 'right', wordBreak: 'break-word' }}>
+        {Array.isArray(value) ? value.join(', ') : value}
+      </span>
     </div>
   )
 }
@@ -65,6 +67,14 @@ export default function StepReview({ onSubmit, onBack }) {
           <SummaryRow label="Database" value={pillars.architecture?.database} />
           <SummaryRow label="Tables Defined" value={pillars.schema?.entities?.length > 0 ? `${pillars.schema.entities.length} tables` : null} />
           <SummaryRow label="Authentication" value={pillars.architecture?.authStrategy} />
+          
+          <h3 style={{ fontSize: '0.8rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '16px 0 10px' }}>
+            Security
+          </h3>
+          <SummaryRow label="Compliance" value={pillars.security?.compliance?.join(', ')} />
+          <SummaryRow label="Data Protection" value={pillars.security?.dataProtection?.join(', ')} />
+          <SummaryRow label="API Security" value={pillars.security?.apiSecurity?.join(', ')} />
+          <SummaryRow label="Vulnerability Protection" value={pillars.security?.vulnerabilityProtection?.join(', ')} />
         </motion.div>
 
         {/* Engine Toggle */}

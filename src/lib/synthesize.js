@@ -7,6 +7,7 @@ import {
   buildSchemaPrompt,
   extractMetricsFromOutputs,
 } from './prompts'
+import { computeCSSVariables } from './colorUtils'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SYSTEM-GENERATED TEMPLATES
@@ -18,14 +19,19 @@ export function generateSystemPRD(answers) {
   const { meta, pillars } = answers
   const stack = pillars.architecture.stack.join(', ') || 'Not specified'
 
+  const features = meta.mvpFeatures ? meta.mvpFeatures.split(/[,\n]/).map(f => f.trim()).filter(Boolean) : []
+  const featureString = features.length >= 2 ? `${features[0]} and ${features[1]}` : (features[0] || 'core functionality')
+  const fallbackPitch = `A specialized application designed for ${meta.targetAudience?.split('\\n').join(', ') || 'users'}, featuring ${featureString} to streamline workflows.`
+  const pitch = (meta.pitch && meta.pitch.trim().length > 0 && meta.pitch.trim() !== 'asdas') ? meta.pitch : fallbackPitch
+
   return `# Product Requirements Document (PRD)
 
-> **Elevator Pitch:** ${meta.pitch || 'Not specified'}
+> **Elevator Pitch:** ${pitch}
 
 ## 1. Project Overview
 - **Name:** ${meta.name}
-- **Elevator Pitch:** ${meta.pitch || 'Not specified'}
-- **Target Audience:** ${meta.targetAudience}
+- **Elevator Pitch:** ${pitch}
+- **Target Audience:** ${meta.targetAudience?.split('\\n').join(', ')}
 
 ## 2. Goals & Success Metrics
 - **Business Goals:**
@@ -140,7 +146,13 @@ flowchart TD
     Service -->|"Formatted Response"| Client
 \`\`\`
 
-## 5. Tech Stack
+## 5. Security
+- **Compliance:** ${pillars.security?.compliance?.join(', ') || 'None'}
+- **Data Protection:** ${pillars.security?.dataProtection?.join(', ') || 'None'}
+- **API Security:** ${pillars.security?.apiSecurity?.join(', ') || 'None'}
+- **Vulnerability Protection:** ${pillars.security?.vulnerabilityProtection?.join(', ') || 'None'}
+
+## 6. Tech Stack
 | Category | Technology | Version |
 | :--- | :--- | :--- |
 ${stackTable || `| Frontend | ${framework} | Latest |`}
@@ -188,6 +200,13 @@ ${db !== 'None' ? `- [ ] Configure ${db} connection string in \`.env.local\`\n` 
 export function generateSystemSchema(answers) {
   const { meta, pillars } = answers
   const db = pillars.architecture.database || 'Postgres'
+  
+  if (db === 'None') {
+    return `# Database Schema & Data Models — ${meta.name}
+
+No database configured for this MVP. Client-side state management is used exclusively.`
+  }
+
   const dbNaming = pillars.rules?.dbNaming || 'snake_case (plural)'
   const isNoSQL = db === 'Firebase'
   const entities = pillars.schema?.entities || []
@@ -484,7 +503,11 @@ export function generateSystemDesign(answers) {
   const vibe = pillars.design.vibe || 'Dark Premium'
   const primaryHex = pillars.design.primaryColor || '#6366f1'
   const secondaryHex = pillars.design.secondaryColor || '#ec4899'
-  const shadesList = pillars.design.shades?.length ? pillars.design.shades.join(', ') : '#ffffff, #111827'
+  
+  const gridMath = pillars.design.gridMath || 'fluid-modular'
+  const surfaceStyle = pillars.design.surfaceStyle || 'warm-cool-grays'
+  const interactionPhysics = pillars.design.interactionPhysics || 'snappy'
+  const typeScale = pillars.design.typeScale || 'utilitarian'
 
   const font = pillars.design.typography === 'Other' && pillars.design.customTypography ? pillars.design.customTypography : pillars.design.typography || 'Inter'
   const secondaryFont = pillars.design.secondaryTypography === 'Other' && pillars.design.customSecondaryTypography ? pillars.design.customSecondaryTypography : pillars.design.secondaryTypography
@@ -499,16 +522,43 @@ export function generateSystemDesign(answers) {
     .map(l => l === 'Other' && pillars.design.customLayoutConcept ? pillars.design.customLayoutConcept : l)
     .join(', ') || 'None'
 
+  const tokens = computeCSSVariables(primaryHex, secondaryHex, surfaceStyle)
+
+  let structuralOverrides = ''
+  if (gridMath === 'tight-bento') {
+    structuralOverrides = `
+  - Cards / Modals: \`16px\`
+  - Buttons / Inputs: \`10px\`
+  - Grid Gaps: \`16px\`
+  - Rule: Inner radius must equal outer radius minus padding
+`
+  } else if (gridMath === 'editorial-asymmetry') {
+    structuralOverrides = `
+  - Cards / Modals: \`0px\`
+  - Buttons / Inputs: \`0px\`
+  - Grid Gaps: \`32px\` to \`64px\` (asymmetric)
+  - Borders: \`1px solid\` or harsh black lines
+`
+  } else {
+    structuralOverrides = `
+  - Cards / Modals: \`12px\`
+  - Buttons / Inputs: \`8px\`
+  - Grid Gaps: \`24px\`
+`
+  }
+
   return `# Design System & UI/UX Guidelines — ${meta.name}
+
+## ⚠️ AI SYSTEM DIRECTIVES: PREVENTING GENERIC DESIGN
+> **CRITICAL RULE FOR AI AGENTS:** You are explicitly forbidden from generating "AI Slop" designs (boring layouts, generic blue buttons, uninspired flat white backgrounds, ignoring physics). You must rigorously follow the mathematical layout rules, exact animation curves, and interpolated CSS color tokens below. Do not deviate.
 
 ## 1. Brand Identity & Theme
 - **Vibe/Style:** ${vibe}
 - **Primary Brand Color:** ${primaryHex}
 - **Secondary Accent Color:** ${secondaryHex}
-- **Neutral Shades (White to Black):** ${shadesList}
 - **Core Concept:** ${meta.name} uses a ${vibe.toLowerCase()} aesthetic — ${
     vibe === 'Dark Premium' ? `deep dark surfaces with glassmorphism cards, aurora gradient backgrounds, and ${primaryHex} accent glows to convey technical sophistication and premium quality.` :
-    vibe === 'Minimalist' ? `generous whitespace, restrained typography, and a clean color palette (Primary: ${primaryHex}, Secondary: ${secondaryHex}, Shades: ${shadesList}) to keep the focus entirely on the content and user actions.` :
+    vibe === 'Minimalist' ? `generous whitespace, restrained typography, and a clean color palette (Primary: ${primaryHex}, Secondary: ${secondaryHex}) to keep the focus entirely on the content and user actions.` :
     vibe === 'Bold & Vibrant' ? `strong color blocks (${primaryHex}, ${secondaryHex}), heavy typography, and high-contrast layouts to create a confident, energetic experience.` :
     vibe === 'Corporate' ? `clean layouts, professional accents (${primaryHex}, ${secondaryHex}), and accessibility-first design to convey reliability and trust to business stakeholders.` :
     vibe === 'Playful' ? `rounded corners, bouncy micro-animations, and bright accents (${primaryHex}, ${secondaryHex}) to make the experience feel approachable and fun.` :
@@ -522,17 +572,16 @@ export function generateSystemDesign(answers) {
 - **Iconography Set:** ${iconSet}
 - **Layout Concept:** ${layoutConceptsList}
 
-## 3. Color Palette & Shades (Separated Groups)
-- **1. Neutral Shades (White to Black):** \`${shadesList}\` — Base surface backgrounds, text contrast, borders
-- **2. Primary Brand Color:** \`${primaryHex}\` — Main CTAs, primary interactive elements, active states
-- **3. Secondary Accent Color:** \`${secondaryHex}\` — Supporting accents, hover glows, gradient pairs
-- **Background:** \`#060614\` — Root page background
-- **Surface:** \`#0d0d1f\` — Cards, panels, sidebars
-- **Surface Elevated:** \`#12122a\` — Modals, dropdowns, tooltips
-- **Border:** \`rgba(255,255,255,0.08)\` — Subtle card borders, dividers
-- **Text Primary:** \`#ffffff\` — Headings, critical labels, active nav items
-- **Text Secondary:** \`rgba(255,255,255,0.6)\` — Body text, descriptions, secondary labels
-- **Text Muted:** \`rgba(255,255,255,0.3)\` — Placeholders, disabled states, metadata
+## 3. Color Palette & Shades
+- **1. Primary Brand Color:** \`${primaryHex}\` — Main CTAs, primary interactive elements, active states
+- **2. Secondary Accent Color:** \`${secondaryHex}\` — Supporting accents, hover glows, gradient pairs
+- **Background:** \`${tokens.bg}\` — Root page background
+- **Surface:** \`${tokens.surface}\` — Cards, panels, sidebars
+- **Surface Elevated:** \`${tokens.surfaceElevated}\` — Modals, dropdowns, tooltips
+- **Border:** \`${tokens.border}\` — Subtle card borders, dividers
+- **Text Primary:** \`${tokens.textPrimary}\` — Headings, critical labels, active nav items
+- **Text Secondary:** \`${tokens.textSecondary}\` — Body text, descriptions, secondary labels
+- **Text Muted:** \`${tokens.textMuted}\` — Placeholders, disabled states, metadata
 - **Semantic:**
   - Success: \`#22c55e\` — Confirmations, completed states
   - Warning: \`#f59e0b\` — Caution states, non-blocking alerts
@@ -540,17 +589,17 @@ export function generateSystemDesign(answers) {
   - Info: \`#38bdf8\` — Informational messages, highlights
 
 \`\`\`css
-/* CSS Custom Properties */
+/* CSS Custom Properties (Computed Surface Harmony) */
 :root {
-  --color-primary: ${primaryHex};
-  --color-secondary: ${secondaryHex};
-  --color-bg: #060614;
-  --color-surface: #0d0d1f;
-  --color-surface-elevated: #12122a;
-  --color-border: rgba(255,255,255,0.08);
-  --color-text-primary: #ffffff;
-  --color-text-secondary: rgba(255,255,255,0.6);
-  --color-text-muted: rgba(255,255,255,0.3);
+  --color-primary: ${tokens.primary};
+  --color-secondary: ${tokens.secondary};
+  --color-bg: ${tokens.bg};
+  --color-surface: ${tokens.surface};
+  --color-surface-elevated: ${tokens.surfaceElevated};
+  --color-border: ${tokens.border};
+  --color-text-primary: ${tokens.textPrimary};
+  --color-text-secondary: ${tokens.textSecondary};
+  --color-text-muted: ${tokens.textMuted};
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -590,22 +639,18 @@ export function generateSystemDesign(answers) {
 | 3xl | 64px | Page section separators |
 
 - **Border Radius:**
-  - Cards / Modals: \`20px\` (1.25rem)
-  - Buttons / Inputs: \`12px\`
-  - Small chips / Badges: \`9999px\` (fully rounded)
-  - Inline code blocks: \`6px\`
+${structuralOverrides}
 
 - **Breakpoints:**
   - sm: 640px | md: 768px | lg: 1024px | xl: 1280px | 2xl: 1536px
 
 ## 6. Animations & Interactions
-- **Micro-interactions:** All hover/active transitions ≤ 200ms using \`cubic-bezier(0.4, 0, 0.2, 1)\`
-- **Page Transitions:** Fade + slide-up, 350ms, \`cubic-bezier(0.4, 0, 0.2, 1)\`
-- **Spring / Pop:** \`cubic-bezier(0.34, 1.56, 0.64, 1)\` for chip selection, button press, modal entrance
+- **Interaction Physics:** ${interactionPhysics === 'snappy' ? 'Snappy & Direct. `cubic-bezier(0.4, 0, 0.2, 1)`, max 150ms. Zero bounce.' : interactionPhysics === 'fluid' ? 'Fluid & Choreographed. `cubic-bezier(0.22, 1, 0.36, 1)`, 400ms duration.' : 'Spring Physics. Stiffness: 400, damping: 25. High bounce.'}
+- **Micro-interactions:** Enforce physics on all hover/active states.
+- **Page Transitions:** Fade + slide-up, matching interaction physics.
 - **Loading States:**
-  - Data fetching → Skeleton loaders (pulsing placeholder shapes)
-  - User-triggered actions → Spinner inside the button
-  - Page transitions → Framer Motion AnimatePresence fade
+  - Data fetching → Skeleton loaders matching surface colors.
+  - User-triggered actions → Spinner inside the button.
 
 - **Rules:**
   - **Do:** Use \`transform\`, \`opacity\`, \`filter\`

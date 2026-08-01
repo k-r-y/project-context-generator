@@ -28,14 +28,20 @@ export default function StepPRD({ onNext, onBack }) {
   const getArray = (val) => val.split('\n').map(x => x.trim()).filter(Boolean)
   const setArray = (arr) => arr.join('\n')
 
-  const handleAudienceSelect = (val) => {
-    setMeta({ targetAudience: val })
+  const audiences = getArray(projectMeta.targetAudience)
+
+  const handleAudienceToggle = (val) => {
+    if (audiences.includes(val)) {
+      setMeta({ targetAudience: setArray(audiences.filter(x => x !== val)) })
+    } else {
+      setMeta({ targetAudience: setArray([...audiences, val]) })
+    }
   }
 
   const handleCustomAudienceAdd = (e) => {
     e.preventDefault()
-    if (customAudience.trim()) {
-      setMeta({ targetAudience: customAudience.trim() })
+    if (customAudience.trim() && !audiences.includes(customAudience.trim())) {
+      setMeta({ targetAudience: setArray([...audiences, customAudience.trim()]) })
       setCustomAudience('')
       setShowCustomAudience(false)
     }
@@ -61,10 +67,12 @@ export default function StepPRD({ onNext, onBack }) {
   const futureFeatures = getArray(projectMeta.outOfScope)
 
   const canProceed =
-    projectMeta.targetAudience.trim().length > 0 &&
+    audiences.length > 0 &&
+    projectMeta.problemToSolve.trim().length > 0 &&
     goals.length > 0 &&
     metrics.length > 0 &&
-    features.length > 0
+    features.length > 0 &&
+    futureFeatures.length > 0
 
   return (
     <QuestionCard>
@@ -89,13 +97,13 @@ export default function StepPRD({ onNext, onBack }) {
           <label className="label-xs">Target Audience</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {AUDIENCE_OPTIONS.map((opt) => {
-              const isActive = projectMeta.targetAudience === opt
+              const isActive = audiences.includes(opt)
               return (
                 <button
                   key={opt}
                   type="button"
                   className={`chip ${isActive ? 'chip-active' : ''}`}
-                  onClick={() => handleAudienceSelect(opt)}
+                  onClick={() => handleAudienceToggle(opt)}
                 >
                   {opt}
                 </button>
@@ -103,17 +111,17 @@ export default function StepPRD({ onNext, onBack }) {
             })}
           </div>
 
-          {projectMeta.targetAudience && !AUDIENCE_OPTIONS.includes(projectMeta.targetAudience) && (
-            <div style={{ marginTop: '4px' }}>
+          {audiences.filter(a => !AUDIENCE_OPTIONS.includes(a)).map((customVal) => (
+            <div key={customVal} style={{ marginTop: '4px', display: 'inline-block', marginRight: '6px' }}>
               <button
                 type="button"
                 className="chip chip-active"
-                onClick={() => setMeta({ targetAudience: '' })}
+                onClick={() => handleAudienceToggle(customVal)}
               >
-                {projectMeta.targetAudience} <span style={{ opacity: 0.5 }}>×</span>
+                {customVal} <span style={{ opacity: 0.5 }}>×</span>
               </button>
             </div>
-          )}
+          ))}
 
           <div style={{ marginTop: '4px' }}>
             {!showCustomAudience ? (
@@ -143,9 +151,49 @@ export default function StepPRD({ onNext, onBack }) {
           </div>
         </motion.div>
 
+        {/* Problem to Solve */}
+        <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label htmlFor="problem-to-solve" className="label-xs">
+              What problem does the project want to solve?
+            </label>
+            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                type="button" 
+                className="btn-ghost" 
+                style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+                onClick={() => setMeta({ problemToSolve: 'None' })}
+              >
+                None
+              </button>
+            
+              {projectMeta.problemToSolve.length}/1000
+            </span>
+          </div>
+          <textarea
+            id="problem-to-solve"
+            className="input-glass"
+            placeholder="e.g. Users currently have to manually aggregate data from 5 different sources..."
+            value={projectMeta.problemToSolve}
+            onChange={(e) => setMeta({ problemToSolve: e.target.value })}
+            rows={3}
+            maxLength={1000}
+          />
+        </motion.div>
+
         {/* Business Goals (Multi-Entry) */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label className="label-xs">Business Goals</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="label-xs">Business Goals</label>
+            <button 
+              type="button" 
+              className="btn-ghost" 
+              style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+              onClick={() => { if (!goals.includes('None')) setMeta({ businessGoals: setArray([...goals, 'None']) }) }}
+            >
+              Add None
+            </button>
+          </div>
           {goals.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' }}>
               {goals.map(g => (
@@ -176,7 +224,17 @@ export default function StepPRD({ onNext, onBack }) {
 
         {/* Success Metrics (Multi-Entry) */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label className="label-xs">Success Metrics</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="label-xs">Success Metrics</label>
+            <button 
+              type="button" 
+              className="btn-ghost" 
+              style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+              onClick={() => { if (!metrics.includes('None')) setMeta({ successMetrics: setArray([...metrics, 'None']) }) }}
+            >
+              Add None
+            </button>
+          </div>
           {metrics.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' }}>
               {metrics.map(m => (
@@ -207,7 +265,17 @@ export default function StepPRD({ onNext, onBack }) {
 
         {/* MVP Features (Multi-Entry) */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label className="label-xs">MVP Features (In Scope)</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="label-xs">MVP Features (In Scope)</label>
+            <button 
+              type="button" 
+              className="btn-ghost" 
+              style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+              onClick={() => { if (!features.includes('None')) setMeta({ mvpFeatures: setArray([...features, 'None']) }) }}
+            >
+              Add None
+            </button>
+          </div>
           {features.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' }}>
               {features.map(f => (
@@ -238,7 +306,17 @@ export default function StepPRD({ onNext, onBack }) {
 
         {/* Future Releases (Multi-Entry) */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label className="label-xs">Future Features (Out of Scope)</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className="label-xs">Future Features (Out of Scope)</label>
+            <button 
+              type="button" 
+              className="btn-ghost" 
+              style={{ padding: '2px 6px', fontSize: '0.65rem' }}
+              onClick={() => { if (!futureFeatures.includes('None')) setMeta({ outOfScope: setArray([...futureFeatures, 'None']) }) }}
+            >
+              Add None
+            </button>
+          </div>
           {futureFeatures.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '4px' }}>
               {futureFeatures.map(ff => (

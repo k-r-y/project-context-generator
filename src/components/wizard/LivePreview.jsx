@@ -13,9 +13,9 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
   if (pitch) preview += `> **Elevator Pitch:** ${pitch}\n\n`
 
   // PRD step preview details
-  if (currentStep >= 1) {
+  if (targetAudience || businessGoals || successMetrics || mvpFeatures || outOfScope) {
     preview += `## Product Scope\n`
-    if (targetAudience) preview += `- **Target Audience:** ${targetAudience}\n`
+    if (targetAudience) preview += `- **Target Audience:** ${targetAudience.split('\\n').join(', ')}\n`
     if (businessGoals) {
       preview += `\n### Business Goals:\n`
       businessGoals.split('\n').map(g => g.trim()).filter(Boolean).forEach(g => {
@@ -43,19 +43,17 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
     preview += `\n`
   }
 
-  if (currentStep >= 2 && architecture.stack.length > 0) {
+  if (architecture.stack?.length > 0) {
     preview += `## Stack\n${architecture.stack.map((s) => `- ${s}`).join('\n')}\n\n`
   }
-  if (currentStep >= 3 && architecture.rendering) {
-    preview += `## Architecture\n**${architecture.rendering}** — ${architecture.designPattern || 'pattern not selected'}\n\n`
+  if (architecture.rendering || architecture.designPattern) {
+    preview += `## Architecture\n**${architecture.rendering || 'None'}** — ${architecture.designPattern || 'None'}\n\n`
   }
-  if (currentStep >= 4 && design.vibe) {
-    const shadesBadges = design.shades?.length ? design.shades.map(s => `\`${s}\``).join(' ') : '`#ffffff` `#111827`'
+  if (design.vibe) {
     const priBadge = design.primaryColor ? `\`${design.primaryColor}\`` : ''
     const secBadge = design.secondaryColor ? `\`${design.secondaryColor}\`` : ''
     
     preview += `## Design\n**${design.vibe}**\n`
-    preview += `- **Shades:** ${shadesBadges}\n`
     if (priBadge) preview += `- **Primary:** ${priBadge}\n`
     if (secBadge) preview += `- **Secondary:** ${secBadge}\n`
     preview += `\n`
@@ -84,8 +82,24 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
     if (design.spacing || design.roundedCorners) {
       preview += `**Spacing:** ${design.spacing || 'Default'} · **Corners:** ${design.roundedCorners || 'Default'}\n\n`
     }
+    
+    if (design.gridMath || design.surfaceStyle || design.interactionPhysics || design.typeScale) {
+      preview += `**Engine Overrides:**\n`
+      if (design.gridMath) preview += `- **Grid Math:** ${design.gridMath}\n`
+      if (design.surfaceStyle) preview += `- **Surface Style:** ${design.surfaceStyle}\n`
+      if (design.interactionPhysics) preview += `- **Physics:** ${design.interactionPhysics}\n`
+      if (design.typeScale) preview += `- **Type Scale:** ${design.typeScale}\n`
+      preview += `\n`
+    }
+    
+    if (design.loadingStyle) {
+      preview += `**Loading & Feedback:**\n`
+      preview += `- **Page:** ${design.loadingStyle.page || 'none'}\n`
+      preview += `- **Component:** ${design.loadingStyle.component || 'none'}\n`
+      preview += `- **Action:** ${design.loadingStyle.action || 'none'}\n\n`
+    }
   }
-  if (currentStep >= 5 && architecture.database) {
+  if (architecture.database) {
     preview += `## Database\n**${architecture.database}**\n\n`
     const entities = pillars.schema?.entities || []
     if (entities.length > 0) {
@@ -96,10 +110,28 @@ function buildPreviewContent(projectMeta, pillars, currentStep) {
       preview += `\n`
     }
   }
-  if (currentStep >= 6 && rules.language) {
-    preview += `## Rules\n**${rules.language}** · ${rules.testing || 'no test runner'} · ${rules.fileNaming || 'default naming'}\n\n`
+
+  if (pillars.security?.compliance?.length || pillars.security?.dataProtection?.length || pillars.security?.apiSecurity?.length || pillars.security?.vulnerabilityProtection?.length) {
+    preview += `## Security\n`
+    if (pillars.security.compliance?.length) preview += `- **Compliance:** ${pillars.security.compliance.join(', ')}\n`
+    if (pillars.security.dataProtection?.length) preview += `- **Data Protection:** ${pillars.security.dataProtection.join(', ')}\n`
+    if (pillars.security.apiSecurity?.length) preview += `- **API Security:** ${pillars.security.apiSecurity.join(', ')}\n`
+    if (pillars.security.vulnerabilityProtection?.length) preview += `- **Vulnerabilities:** ${pillars.security.vulnerabilityProtection.join(', ')}\n`
+    preview += `\n`
   }
-  if (currentStep >= 7) {
+
+  if (rules.language) {
+    preview += `## Rules\n`
+    preview += `- **Language:** ${rules.language}\n`
+    if (rules.testing) preview += `- **Testing:** ${rules.testing}\n`
+    if (rules.fileNaming) preview += `- **File Naming:** ${rules.fileNaming}\n`
+    if (rules.dbNaming) preview += `- **DB Naming:** ${rules.dbNaming}\n`
+    if (rules.errorHandling) preview += `- **Error Handling:** ${rules.errorHandling}\n`
+    if (rules.antiPatterns?.length) preview += `- **Anti-Patterns:** ${rules.antiPatterns.join(', ')}\n`
+    if (rules.extraConstraints) preview += `- **Constraints:** ${rules.extraConstraints}\n`
+    preview += `\n`
+  }
+  if (currentStep >= 8) {
     preview += `---\n_Ready to generate 5 context files._\n`
   }
   return preview

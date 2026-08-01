@@ -221,6 +221,16 @@ export default function Dashboard() {
 
           <button
             className="btn-ghost"
+            onClick={() => navigate('/wizard')}
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}
+            aria-label="Edit config"
+          >
+            <Settings size={13} />
+            <span className="hide-tablet">Edit Config</span>
+          </button>
+
+          <button
+            className="btn-ghost"
             onClick={handleReset}
             style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}
             aria-label="Start over"

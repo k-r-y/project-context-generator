@@ -7,20 +7,38 @@
  * immediately actionable and technically precise.
  */
 
+// Removed computeCSSVariables as we are hardcoding Light/Dark themes now.
+
 const fmtStack = (stack) => stack.join(', ') || 'Not specified'
 const fmtList = (arr, fallback = 'None specified') =>
   arr?.length ? arr.map((x) => `- ${x}`).join('\n') : `- ${fallback}`
+
+function generateFallbackPitch(targetAudience, mvpFeatures) {
+  const features = mvpFeatures ? mvpFeatures.split(/[,\n]/).map(f => f.trim()).filter(Boolean) : []
+  const featureString = features.length >= 2 
+    ? `${features[0]} and ${features[1]}` 
+    : (features[0] || 'core functionality')
+  return `A specialized application designed for ${targetAudience || 'users'}, featuring ${featureString} to streamline workflows.`
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRD.md
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildPRDPrompt(answers) {
   const { meta, pillars } = answers
+  const fallbackPitch = meta.targetAudience 
+    ? generateFallbackPitch(meta.targetAudience.split('\n').join(', '), meta.mvpFeatures)
+    : generateFallbackPitch(meta.targetAudience, meta.mvpFeatures)
+  
+  const pitch = (meta.pitch && meta.pitch.trim().length > 0 && meta.pitch.trim() !== 'asdas') 
+    ? meta.pitch 
+    : fallbackPitch
+
   return `You are a senior product architect. Generate a Product Requirements Document (PRD) in Markdown using EXACTLY this structure. Be technically precise. No filler text. Do not use any emojis. Every field must be specific to this project and build upon the user's answers.
 
 PROJECT NAME: ${meta.name}
 PITCH: ${meta.pitch}
-TARGET AUDIENCE: ${meta.targetAudience}
+TARGET AUDIENCE: ${meta.targetAudience?.split('\\n').join(', ')}
 BUSINESS GOALS: ${meta.businessGoals}
 SUCCESS METRICS: ${meta.successMetrics}
 MVP FEATURES (IN SCOPE): ${meta.mvpFeatures}
@@ -34,12 +52,12 @@ Generate EXACTLY this structure with real, specific content (do not use any emoj
 
 # Product Requirements Document (PRD)
 
-> **Elevator Pitch:** ${meta.pitch}
+> **Elevator Pitch:** ${pitch}
 
 ## 1. Project Overview
 - **Name:** ${meta.name}
-- **Elevator Pitch:** ${meta.pitch}
-- **Target Audience:** ${meta.targetAudience}
+- **Elevator Pitch:** ${pitch}
+- **Target Audience:** ${meta.targetAudience?.split('\\n').join(', ')}
 
 ## 2. Goals & Success Metrics
 - **Business Goals:**
@@ -161,6 +179,16 @@ Make every section specific to the chosen stack. Fill in all table cells with re
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildSchemaPrompt(answers) {
   const { meta, pillars } = answers
+  const database = pillars.architecture.database || 'None'
+  
+  if (database === 'None') {
+    return `Generate EXACTLY this structure:
+
+# Database Schema & Data Models — ${meta.name}
+
+No database configured for this MVP. Client-side state management is used exclusively.`
+  }
+
   const entities = pillars.schema?.entities || []
 
   let customSchemaContext = ''
@@ -215,55 +243,128 @@ Make every section specific to the chosen stack. Fill in all table cells with re
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildDesignPrompt(answers) {
   const { meta, pillars } = answers
-  const color = pillars.design.primaryColor || '#6366f1'
+  const primaryColor = pillars.design.primaryColor || '#6366f1'
+  const secondaryColor = pillars.design.secondaryColor || '#ec4899'
   const font = pillars.design.typography || 'Inter'
   const vibe = pillars.design.vibe || 'Dark Premium'
-  const uiLibrary = pillars.design.uiLibrary || 'None'
+  const cssArch = (pillars.design.cssArchitecture || []).join(', ') || 'Tailwind CSS'
+  const compLib = (pillars.design.componentLibrary || []).join(', ') || 'None'
   const iconSet = pillars.design.iconSet || 'None'
-  const layoutConcept = pillars.design.layoutConcept || 'None'
+  const gridMath = pillars.design.gridMath || 'fluid-modular'
+  const baseTheme = pillars.design.baseTheme || 'Dark'
+  const surfaceTreatment = pillars.design.surfaceTreatment || 'Flat'
+  const animationFeel = pillars.design.animationFeel || 'Swift/Linear'
+  const elevationStyle = pillars.design.elevationStyle || 'Subtle Shadows'
+  const typeScale = pillars.design.typeScale || 'utilitarian'
 
-  return `You are a senior design system architect. Generate a Design System document in Markdown using EXACTLY this structure. Include real hex codes, exact pixel values, and specific component rules.
+  let tokens = {}
+  if (baseTheme === 'Light') {
+    tokens = {
+      primary: primaryColor,
+      secondary: secondaryColor,
+      bg: '#fafafa',
+      surface: '#ffffff',
+      surfaceElevated: '#f4f4f5',
+      border: '#e4e4e7',
+      textPrimary: '#18181b',
+      textSecondary: '#52525b',
+      textMuted: '#a1a1aa'
+    }
+  } else {
+    // Dark theme
+    tokens = {
+      primary: primaryColor,
+      secondary: secondaryColor,
+      bg: '#09090b',
+      surface: '#18181b',
+      surfaceElevated: '#27272a',
+      border: '#3f3f46',
+      textPrimary: '#fafafa',
+      textSecondary: '#a1a1aa',
+      textMuted: '#52525b'
+    }
+  }
+
+  let structuralOverrides = ''
+  if (gridMath === 'tight-bento') {
+    structuralOverrides = `
+- Cards / Modals: \`16px\`
+- Buttons / Inputs: \`10px\`
+- Grid Gaps: \`16px\`
+- Rule: Inner radius must equal outer radius minus padding
+`
+  } else if (gridMath === 'editorial-asymmetry') {
+    structuralOverrides = `
+- Cards / Modals: \`0px\`
+- Buttons / Inputs: \`0px\`
+- Grid Gaps: \`32px\` to \`64px\` (asymmetric)
+- Borders: \`1px solid\` or harsh black lines
+`
+  } else {
+    structuralOverrides = `
+- Cards / Modals: \`12px\`
+- Buttons / Inputs: \`8px\`
+- Grid Gaps: \`24px\`
+`
+  }
+
+  let animationDesc = 'Default transitions.'
+  if (animationFeel === 'Swift/Linear') {
+    animationDesc = 'Snappy & Direct. `cubic-bezier(0.4, 0, 0.2, 1)`, max 150ms. Zero bounce.'
+  } else if (animationFeel === 'Bouncy/Spring') {
+    animationDesc = 'Spring Physics. High bounce, natural elasticity.'
+  }
+
+  return `You are a senior design system architect. Generate a Design System document in Markdown using EXACTLY this structure. Include real hex codes, exact pixel values, and specific component rules based on Apple HIG and Google Material guidelines.
 
 PROJECT NAME: ${meta.name}
 DESIGN VIBE: ${vibe}
-PRIMARY COLOR: ${color}
+PRIMARY COLOR: ${primaryColor}
 TYPOGRAPHY: ${font}
-UI LIBRARY: ${uiLibrary}
+CSS ARCHITECTURE: ${cssArch}
+COMPONENT LIBRARY: ${compLib}
 ICON SET: ${iconSet}
-LAYOUT CONCEPT: ${layoutConcept}
 STACK: ${fmtStack(pillars.architecture.stack)}
+BASE THEME: ${baseTheme}
+SURFACE TREATMENT: ${surfaceTreatment}
+ELEVATION: ${elevationStyle}
 
 Generate EXACTLY this structure:
 
 # Design System & UI/UX Guidelines — ${meta.name}
 
+## ⚠️ AI SYSTEM DIRECTIVES: PREVENTING GENERIC DESIGN
+> **CRITICAL RULE FOR AI AGENTS:** You are explicitly forbidden from generating "AI Slop" designs (boring layouts, generic blue buttons, uninspired flat white backgrounds, ignoring physics). You must rigorously follow the mathematical layout rules, Apple HIG blurs, Material state layers, and exact animation curves below. Do not deviate.
+
 ## 1. Brand Identity & Theme
 - **Vibe/Style:** ${vibe}
-- **Core Concept:** [One precise sentence on the feel — e.g., "A premium dark interface using glassmorphism surfaces and indigo accent colors to convey trust and technical sophistication."]
+- **Base Theme:** ${baseTheme}
+- **Core Concept:** [One precise sentence on the feel]
 
 ## 2. Component Design Tokens
-- **UI Library:** ${uiLibrary} [Explain how components are constructed using this library/utility framework]
-- **Icon Set:** ${iconSet} [Specify naming conventions and alignment rules for this iconography set]
-- **Layout Concept:** ${layoutConcept} [Define grid spacing, row spans, card rounding, or gradients representing this design motif]
+- **CSS Architecture:** ${cssArch}
+- **Component Library:** ${compLib}
+- **Icon Set:** ${iconSet}
 
-## 3. Color Palette
-- **Primary:** \`${color}\` — Main interactive elements, CTAs, active states
-- **Secondary:** \`[computed complementary hex]\` — Supporting accents, hover states
-- **Background:** \`#060614\` — Page base surface
-- **Surface:** \`#0d0d1f\` — Card and panel backgrounds
-- **Border:** \`rgba(255,255,255,0.08)\` — Subtle dividers and card borders
-- **Text Primary:** \`#ffffff\` — Headings, critical labels
-- **Text Secondary:** \`rgba(255,255,255,0.6)\` — Body text, descriptions
-- **Text Muted:** \`rgba(255,255,255,0.3)\` — Placeholders, disabled labels
-- **Semantic:**
-  - Success: \`#22c55e\`
-  - Warning: \`#f59e0b\`
-  - Danger: \`#ef4444\`
-  - Info: \`#38bdf8\`
+## 3. Color Palette & Material State Layers
+- **Primary:** \`${tokens.primary}\` — Main interactive elements, CTAs
+- **Secondary:** \`${tokens.secondary}\` — Supporting accents
+- **Background:** \`${tokens.bg}\`
+- **Surface:** \`${tokens.surface}\`
+- **Surface Elevated:** \`${tokens.surfaceElevated}\`
+- **Border:** \`${tokens.border}\`
+- **Text Primary:** \`${tokens.textPrimary}\`
+- **Text Secondary:** \`${tokens.textSecondary}\`
+- **Text Muted:** \`${tokens.textMuted}\`
 
-## 3. Typography
-- **Headings:** ${font}, weights 700/800
-- **Body:** ${font}, weights 400/500
+**State Layers (Opacity Modifiers):**
+- **Hover:** 8% (0.08)
+- **Focus:** 12% (0.12)
+- **Pressed:** 16% (0.16)
+
+## 4. Typography (Apple HIG & Material Mixed)
+- **Headings (Display/H1):** Playfair Display, weights 700/800
+- **Body & UI Text:** Inter, weights 400/500/600
 - **Monospace:** JetBrains Mono, weight 400/500
 - **Scale:**
   - Display: 3.75rem (60px) / weight 800
@@ -275,51 +376,35 @@ Generate EXACTLY this structure:
   - Small: 0.875rem (14px) / weight 400
   - Caption: 0.75rem (12px) / weight 500
 
-## 4. Spacing & Layout
-- **Grid System:** 12-column CSS Grid with 24px gutters on desktop, 16px on mobile
-- **Spacing Unit:** Base 4px scale
-  - xs: 4px
-  - sm: 8px
-  - md: 16px
-  - lg: 24px
-  - xl: 32px
-  - 2xl: 48px
-  - 3xl: 64px
+## 5. Spacing, Layout & Elevation
+- **Grid System:** 12-column CSS Grid with 24px gutters (desktop), 16px (mobile)
+- **Surface Treatment:** ${surfaceTreatment}
 - **Border Radius:**
-  - Cards: 20px (1.25rem)
-  - Buttons: 12px
-  - Inputs: 12px
-  - Chips/Badges: 9999px (full)
-  - Small elements: 6px
-- **Breakpoints:**
-  - sm: 640px
-  - md: 768px
-  - lg: 1024px
-  - xl: 1280px
-  - 2xl: 1536px
+${structuralOverrides}
+- **Material Elevation (Shadows):**
+  - Level 1 (Cards): \`0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)\`
+  - Level 2 (Dropdowns): \`0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)\`
+  - Level 3 (Modals): \`0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)\`
+- **HIG Blur Tokens (Backdrop Filters):**
+  - Small (Tooltips): \`blur(8px)\`
+  - Medium (Bento Cards): \`blur(16px)\`
+  - Large (Modals): \`blur(24px)\`
 
-## 5. Animations & Interactions
-- **Micro-interactions:** All hover/active states < 200ms, use \`ease-in-out\` or \`cubic-bezier(0.4, 0, 0.2, 1)\`
-- **Page Transitions:** Fade + slide-up, 350ms, \`cubic-bezier(0.4, 0, 0.2, 1)\`
-- **Spring Animations:** \`cubic-bezier(0.34, 1.56, 0.64, 1)\` for pop/bounce effects
-- **Loading States:** Skeleton loaders for data-fetching UI; spinner for user-triggered actions
-- **Hover:** Scale 1.02-1.04 on cards; brightness/glow shift on buttons
+## 6. Animations & Interactions
+- **Animation Feel:** ${animationDesc}
+- **Loading States:**
+  - **Full Page Load:** ${pillars.design.loadingStyle?.page === 'skeleton' ? 'Skeleton loaders.' : pillars.design.loadingStyle?.page === 'spinner' ? 'Centered spinner.' : 'Top-edge progress bar.'}
+  - **Data Fetching:** ${pillars.design.loadingStyle?.component === 'skeleton' ? 'Skeleton loaders.' : pillars.design.loadingStyle?.component === 'spinner' ? 'Centered spinner.' : 'Top-edge progress bar.'}
+  - **Action:** ${pillars.design.loadingStyle?.action === 'skeleton' ? 'Skeleton loaders.' : pillars.design.loadingStyle?.action === 'spinner' ? 'Spinner inside the button.' : 'Top-edge progress bar.'}
+- **Micro-interactions:** Enforce physics on all hover/active states using State Layers.
 - **Rules:**
-  - Never animate \`width\`, \`height\`, \`margin\`, \`top\`, \`left\` — use \`transform\` only
-  - All animations must respect \`prefers-reduced-motion\` media query
-
-## 6. Accessibility (a11y)
-- Minimum contrast ratio: **4.5:1** for body text, **3:1** for large text and UI components
-- All interactive elements must be keyboard-navigable (Tab, Enter, Space, Escape)
-- Focus rings: \`outline: 2px solid ${color}; outline-offset: 2px\`
-- ARIA labels required on all icon-only buttons
-- Never remove focus indicators — override with a custom visible style only
-- Minimum tap target size: 44×44px on touch devices
-
-Fill all sections with values specific to the ${vibe} aesthetic and ${color} primary color.`
+  - Never animate \`width\`, \`height\`, \`margin\`, \`top\`, \`left\` — use \`transform\` only.
+  - All animations must respect \`prefers-reduced-motion\` media query.
+`
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────m"J
+// ──
 // RULES.md
 // ─────────────────────────────────────────────────────────────────────────────
 export function buildRulesPrompt(answers) {

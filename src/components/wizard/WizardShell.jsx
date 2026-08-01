@@ -10,15 +10,17 @@ import StepStack from './steps/StepStack'
 import StepRendering from './steps/StepRendering'
 import StepDesignVibe from './steps/StepDesignVibe'
 import StepDatabase from './steps/StepDatabase'
+import StepSecurity from './steps/StepSecurity'
 import StepRules from './steps/StepRules'
 import StepReview from './steps/StepReview'
+import DesignPreviewCard from './steps/DesignPreviewCard'
 import useProjectStore from '@/store/useProjectStore'
 import SpotlightCard from '@/components/ui/SpotlightCard'
 import { synthesizeAll } from '@/lib/synthesize'
 import { slideVariants, slideTransition } from '@/lib/animationVariants'
 
-const STEP_LABELS = ['Welcome', 'PRD', 'Stack', 'Architecture', 'Design', 'Data', 'Rules', 'Review']
-const STEPS = [StepWelcome, StepPRD, StepStack, StepRendering, StepDesignVibe, StepDatabase, StepRules, StepReview]
+const STEP_LABELS = ['Welcome', 'PRD', 'Stack', 'Architecture', 'Design', 'Data', 'Security', 'Rules', 'Review']
+const STEPS = [StepWelcome, StepPRD, StepStack, StepRendering, StepDesignVibe, StepDatabase, StepSecurity, StepRules, StepReview]
 
 export default function WizardShell() {
   const navigate = useNavigate()
@@ -77,16 +79,25 @@ export default function WizardShell() {
         <nav className="wizard-nav" style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           {STEP_LABELS.map((label, i) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{
+              <span 
+                onClick={() => i !== currentStep ? useProjectStore.getState().goToStep(i) : null}
+                style={{
                 fontSize: '0.75rem',
                 color: i === currentStep
                   ? 'var(--color-text-primary)'
-                  : i < currentStep
-                  ? 'var(--color-text-muted)'
                   : 'var(--color-text-muted)',
                 fontWeight: i === currentStep ? 600 : 400,
                 opacity: i > currentStep ? 0.4 : 1,
-              }}>
+                cursor: i !== currentStep ? 'pointer' : 'default',
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                if (i !== currentStep) e.currentTarget.style.color = 'var(--color-text-primary)'
+              }}
+              onMouseLeave={(e) => {
+                if (i !== currentStep) e.currentTarget.style.color = 'var(--color-text-muted)'
+              }}
+              >
                 {label}
               </span>
               {i < STEP_LABELS.length - 1 && (
@@ -127,7 +138,7 @@ export default function WizardShell() {
       <div style={{
         flex: 1,
         display: 'grid',
-        gridTemplateColumns: '1fr 340px',
+        gridTemplateColumns: '1fr 420px',
         gap: 0,
         overflow: 'hidden',
       }} className="wizard-layout">
@@ -200,8 +211,11 @@ export default function WizardShell() {
         </div>
 
         {/* Live preview */}
-        <div className="live-preview-panel" style={{ overflowY: 'auto' }}>
-          <LivePreview />
+        <div className="live-preview-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '24px', height: '100vh', overflowY: 'auto' }}>
+          {currentStep === 4 && <DesignPreviewCard />}
+          <div style={{ flex: 1, minHeight: '500px' }}>
+            <LivePreview />
+          </div>
         </div>
       </div>
 

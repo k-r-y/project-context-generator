@@ -10,25 +10,30 @@ const STACK_CATEGORIES = [
   {
     id: 'languages',
     title: 'Programming Languages',
-    items: ['TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Rust', 'C#', 'Swift', 'Kotlin', 'Dart', 'C++'],
+    items: ['TypeScript', 'JavaScript', 'Python', 'PHP', 'Java', 'Ruby', 'Go', 'Rust', 'C#', 'Swift', 'Kotlin', 'Dart', 'C++', 'None (Language)'],
   },
   {
     id: 'frameworks',
     title: 'Frameworks & Runtimes',
     items: [
       'Next.js', 'React', 'Vue', 'Svelte', 'Angular', 'NestJS',
-      'Express', 'Fastify', 'FastAPI', 'Django', 'Spring Boot',
-      'Gin', 'Axum', 'ASP.NET Core', 'SwiftUI', 'Jetpack Compose',
-      'React Native', 'Expo', 'Flutter',
+      'Express', 'Fastify', 'FastAPI', 'Django', 'Laravel', 'Spring Boot',
+      'Ruby on Rails', 'Gin', 'Axum', 'ASP.NET Core', 'SwiftUI', 'Jetpack Compose',
+      'React Native', 'Expo', 'Flutter', 'None (Framework)',
     ],
+  },
+  {
+    id: 'buildTools',
+    title: 'Build Tools & Bundlers',
+    items: ['Vite', 'Webpack', 'Turbopack', 'esbuild', 'Rollup', 'Parcel', 'None (Build Tool)'],
   },
   {
     id: 'databases',
     title: 'Databases, ORMs & Data Layers',
     items: [
-      'PostgreSQL', 'MySQL', 'SQLite', 'MongoDB', 'Redis',
+      'PostgreSQL', 'MySQL', 'MariaDB', 'SQLite', 'MongoDB', 'Redis',
       'Supabase', 'Firebase', 'Prisma', 'Drizzle', 'Hibernate',
-      'SQLAlchemy', 'GORM',
+      'SQLAlchemy', 'GORM', 'None (Database)',
     ],
   },
   {
@@ -36,14 +41,22 @@ const STACK_CATEGORIES = [
     title: 'Cloud & Infrastructure',
     items: [
       'Vercel', 'Netlify', 'Railway', 'Fly.io', 'AWS',
-      'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions',
+      'Docker', 'Kubernetes', 'Terraform', 'GitHub Actions', 'None (Infra)',
     ],
   },
   {
     id: 'apis',
     title: 'APIs & Protocols',
-    items: ['REST', 'GraphQL', 'tRPC', 'gRPC', 'WebSockets'],
+    items: ['REST', 'GraphQL', 'tRPC', 'gRPC', 'WebSockets', 'None (API)'],
   },
+]
+
+const EXPECTED_USERS_OPTIONS = [
+  'Just Me (Frontend only, low traffic)',
+  '10s (Small team / beta)',
+  '100s (Growing startup)',
+  '1000s+ (Scale)',
+  'None'
 ]
 
 const FRAMEWORK_LANGUAGES = {
@@ -57,7 +70,9 @@ const FRAMEWORK_LANGUAGES = {
   'Fastify': ['TypeScript', 'JavaScript'],
   'FastAPI': ['Python'],
   'Django': ['Python'],
+  'Laravel': ['PHP'],
   'Spring Boot': ['Java'],
+  'Ruby on Rails': ['Ruby'],
   'Gin': ['Go'],
   'Axum': ['Rust'],
   'ASP.NET Core': ['C#'],
@@ -78,22 +93,22 @@ const PLATFORM_RESTRICTIONS = {
     frameworks: ['Jetpack Compose', 'React Native', 'Expo', 'Flutter'],
   },
   'Web': {
-    languages: ['TypeScript', 'JavaScript', 'Python', 'Java', 'Go', 'Rust', 'C#', 'Dart'],
-    frameworks: ['Next.js', 'React', 'Vue', 'Svelte', 'Angular', 'NestJS', 'Express', 'Fastify', 'FastAPI', 'Django', 'Spring Boot', 'Gin', 'Axum', 'ASP.NET Core'],
+    languages: ['TypeScript', 'JavaScript', 'Python', 'PHP', 'Java', 'Ruby', 'Go', 'Rust', 'C#', 'Dart'],
+    frameworks: ['Next.js', 'React', 'Vue', 'Svelte', 'Angular', 'NestJS', 'Express', 'Fastify', 'FastAPI', 'Django', 'Laravel', 'Spring Boot', 'Ruby on Rails', 'Gin', 'Axum', 'ASP.NET Core'],
   },
   'Desktop': {
     languages: ['C#', 'C++', 'Rust', 'TypeScript', 'JavaScript', 'Java', 'Swift', 'Kotlin'],
     frameworks: ['React', 'Vue', 'Svelte', 'ASP.NET Core', 'SwiftUI', 'Jetpack Compose'],
   },
   'Cloud': {
-    languages: ['TypeScript', 'JavaScript', 'Python', 'Go', 'Rust', 'Java', 'C#', 'C++'],
-    frameworks: ['NestJS', 'Express', 'Fastify', 'FastAPI', 'Django', 'Spring Boot', 'Gin', 'Axum', 'ASP.NET Core'],
+    languages: ['TypeScript', 'JavaScript', 'Python', 'PHP', 'Go', 'Rust', 'Java', 'Ruby', 'C#', 'C++'],
+    frameworks: ['NestJS', 'Express', 'Fastify', 'FastAPI', 'Django', 'Laravel', 'Spring Boot', 'Ruby on Rails', 'Gin', 'Axum', 'ASP.NET Core'],
   }
 }
 
 
 export default function StepStack({ onNext, onBack }) {
-  const { projectMeta, pillars, setArchitecture } = useProjectStore()
+  const { projectMeta, setMeta, pillars, setArchitecture } = useProjectStore()
   const selected = pillars.architecture.stack || []
   const [customInput, setCustomInput] = useState('')
   const [showCustom, setShowCustom] = useState(false)
@@ -134,9 +149,23 @@ export default function StepStack({ onNext, onBack }) {
 
   const handleToggle = (item) => {
     const isAdding = !selected.includes(item)
-    let nextStack = selected.includes(item)
-      ? selected.filter((x) => x !== item)
-      : [...selected, item]
+    const category = STACK_CATEGORIES.find(cat => cat.items.includes(item))
+    
+    let nextStack = [...selected]
+
+    if (isAdding) {
+      if (item.startsWith('None')) {
+        nextStack = nextStack.filter(x => !category.items.includes(x))
+      } else if (category) {
+        const noneItem = category.items.find(x => x.startsWith('None'))
+        if (noneItem) {
+          nextStack = nextStack.filter(x => x !== noneItem)
+        }
+      }
+      nextStack.push(item)
+    } else {
+      nextStack = nextStack.filter(x => x !== item)
+    }
 
     if (languages.includes(item)) {
       // Toggle language
@@ -184,13 +213,30 @@ export default function StepStack({ onNext, onBack }) {
     }
   }
 
-  const canProceed = selected.length > 0
+  const hasSelectionForCategory = (catId) => {
+    const cat = STACK_CATEGORIES.find(c => c.id === catId)
+    let availableItems = cat.items
+    if (catId === 'languages') availableItems = languages
+    if (catId === 'frameworks') availableItems = frameworks
+    
+    return availableItems.some(i => selected.includes(i))
+  }
+
+  const canProceed = 
+    projectMeta.expectedUsers.trim().length > 0 &&
+    hasSelectionForCategory('languages') &&
+    hasSelectionForCategory('frameworks') &&
+    hasSelectionForCategory('buildTools') &&
+    hasSelectionForCategory('databases') &&
+    hasSelectionForCategory('infra') &&
+    hasSelectionForCategory('apis')
 
   // Calculate disabled frameworks
   const selectedLangs = getSelectedLanguages(selected)
   const disabledFrameworks = selectedLangs.length === 0
     ? []
     : frameworks.filter((fw) => {
+        if (fw.startsWith('None')) return false
         const reqLangs = FRAMEWORK_LANGUAGES[fw]
         if (!reqLangs) return false
         return !reqLangs.some((l) => selectedLangs.includes(l))
@@ -227,6 +273,26 @@ export default function StepStack({ onNext, onBack }) {
           </p>
         </motion.div>
 
+        {/* Expected Users */}
+        <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label className="label-xs">Expected Users / Traffic</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {EXPECTED_USERS_OPTIONS.map((opt) => {
+              const isActive = projectMeta.expectedUsers === opt
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  className={`chip ${isActive ? 'chip-active' : ''}`}
+                  onClick={() => setMeta({ expectedUsers: opt })}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+          </div>
+        </motion.div>
+
         {/* Grouped stack options */}
         <motion.div variants={staggerItem} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {STACK_CATEGORIES.map((category) => {
@@ -235,9 +301,15 @@ export default function StepStack({ onNext, onBack }) {
             
             let visibleItems = category.items
             if (isLanguageCat && restrictions?.languages) {
-              visibleItems = visibleItems.filter(x => restrictions.languages.includes(x))
-            } else if (isFrameworkCat && restrictions?.frameworks) {
-              visibleItems = visibleItems.filter(x => restrictions.frameworks.includes(x))
+              visibleItems = visibleItems.filter(x => restrictions.languages.includes(x) || x === 'None')
+            } else if (isFrameworkCat) {
+              if (restrictions?.frameworks) {
+                visibleItems = visibleItems.filter(x => restrictions.frameworks.includes(x) || x === 'None')
+              }
+              // Hide frameworks that don't match the selected languages
+              if (selectedLangs.length > 0) {
+                visibleItems = visibleItems.filter(x => !disabledFrameworks.includes(x))
+              }
             }
 
             if (visibleItems.length === 0) return null
